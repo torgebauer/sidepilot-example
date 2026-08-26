@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - configmap.yaml
+  - deployment.yaml
+  - postgres.yml
+  - pvc.yaml
+  - service.yaml
+
+configMapGenerator:
+  - name: sidepilot-model-config
+    files:
+      - config/models/foundry.yaml
+  - name: sidepilot-deployment-config
+    files:
+      - deployment.yaml=config/deployment/deployment.yaml
+      - feature-operation-map.yaml=config/deployment/feature-operation-map.yaml
+      - page-operation-map.yaml=config/deployment/page-operation-map.yaml
+  - name: sidepilot-openapi-onboarding
+    files:
+      - onboarding-service.yml=config/deployment/openapi/onboarding-service.yml
+  - name: sidepilot-openapi-billing
+    files:
+      - billing-api.yml=config/deployment/openapi/billing-api.yml
+  - name: sidepilot-openapi-community-management
+    files:
+      - community-management-service.yml=config/deployment/openapi/community-management-service.yml
+  - name: sidepilot-openapi-market-processes
+    files:
+      - market-processes.yml=config/deployment/openapi/market-processes.yml
+  - name: sidepilot-openapi-metering-data
+    files:
+      - metering-data-service.yml=config/deployment/openapi/metering-data-service.yml
+  - name: sidepilot-openapi-participant
+    files:
+      - participant-service.yml=config/deployment/openapi/participant-service.yml

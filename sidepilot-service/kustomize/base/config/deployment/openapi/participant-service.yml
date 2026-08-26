@@ -1,0 +1,619 @@
+openapi: 3.0.1
+info:
+  title: Participant Service
+  description: This is the backend server for the energy communities participant.
+  contact:
+    name: "Salzburg AG für Energie, Verkehr und Telekommunikation"
+    url: https://github.com/salzburg-ag
+    email: kundenservice@salzburg-ag.at
+  version: 1.0.0
+paths:
+  /api/participants/permissions:
+    get:
+      tags:
+        - ParticipantPermissions
+      summary: Get participant permissions
+      operationId: getParticipantPermissions
+      responses:
+        "200":
+          description: Participant permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParticipantPermissionsResponse"
+        "403":
+          description: Insufficient privileges
+        "400":
+          description: Request contained no valid user email in the JWT
+  /api/participants/permissions/communities/{communityId}:
+    get:
+      tags:
+        - ParticipantPermissions
+      summary: Get participant permissions per community
+      operationId: getParticipantPermissionsByCommunity
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Participant permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParticipantCommunityPermissionsResponse"
+        "403":
+          description: Insufficient privileges
+        "400":
+          description: Request contained no valid user email in the JWT
+  /api/account:
+    post:
+      tags:
+        - AccountM2M
+      summary: Get or create account
+      operationId: getOrCreateAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountRequest"
+        required: true
+      responses:
+        "200":
+          description: Account is successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountResponse"
+        "403":
+          description: Insufficient privileges
+        "400":
+          description: Invalid account email provided
+  /api/communities/{communityId}/manager:
+    get:
+      tags:
+        - CommunityManagerM2M
+      summary: Get community managers for specific community
+      operationId: getCommunityManagers
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Community managers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommunityManagerResponse"
+  /api/account/{accountId}/communities/{communityId}/roles:
+    get:
+      tags:
+        - AccountRole
+      summary: Get account community roles
+      operationId: getAccountRoles
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Account roles per community
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ParticipantCommunityRolesResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant not found
+    post:
+      tags:
+        - AccountRole
+      summary: Assign community role to account
+      operationId: createAccountCommunityRole
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountRoleRequest"
+        required: true
+      responses:
+        "200":
+          description: Admin role successfully assigned
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant not found
+    delete:
+      tags:
+        - AccountRole
+      summary: Delete community role from account
+      operationId: deleteAccountCommunityRole
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountRoleRequest"
+        required: true
+      responses:
+        "204":
+          description: Admin role successfully deleted
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant not found
+  /api/communities/{communityId}/account/{accountId}/impersonate:
+    get:
+      tags:
+        - Impersonate
+      summary: Get impersonation details for an account
+      operationId: getImpersonateDetails
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Account impersonation details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImpersonateResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Account not found
+    patch:
+      tags:
+        - Impersonate
+      summary: Update impersonation email for an account
+      operationId: updateImpersonateEmail
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImpersonateRequest"
+        required: true
+      responses:
+        "200":
+          description: Impersonation email updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImpersonateResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Account not found
+        "418":
+          description: Error during patch
+  /api/communities/{communityId}/manager/impersonate:
+    get:
+      tags:
+        - Impersonate
+      summary: Get impersonation details for a community manager
+      operationId: getCommunityManagerAccountImpersonateDetails
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Community manager impersonation details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityManagerImpersonateResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+    patch:
+      tags:
+        - Impersonate
+      summary: Update impersonation email for a community manager
+      operationId: updateCommunityManagerAccountImpersonateEmail
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImpersonateRequest"
+        required: true
+      responses:
+        "200":
+          description: Impersonation email updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunityManagerImpersonateResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+        "418":
+          description: Error during patch
+  /api/prospect/submitForm:
+    post:
+      tags:
+        - Prospect
+      operationId: submitForm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProspectFormSubmissionRequest"
+        required: true
+      responses:
+        "200":
+          description: submitForm 200 response
+          content:
+            application/json:
+              schema:
+                type: string
+  /api/communities/{communityId}/settings:
+    get:
+      tags:
+        - CommunitySettings
+      operationId: getCommunitySettings
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Get community settings successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunitySettingsResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+    patch:
+      tags:
+        - CommunitySettings
+      summary: Update community settings
+      operationId: updateCommunitySettings
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommunitySettingsRequest"
+        required: true
+      responses:
+        "200":
+          description: Community Setting updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommunitySettingsResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+        "418":
+          description: Error during patch
+components:
+  schemas:
+    AccountRequest:
+      required:
+        - email
+      properties:
+        email:
+          type: string
+    AccountResponse:
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        status:
+          $ref: "#/components/schemas/AccountStatus"
+    AccountRoleRequest:
+      required:
+        - role
+        - participantId
+      type: object
+      properties:
+        role:
+          $ref: "#/components/schemas/Role"
+        participantId:
+          type: string
+          format: uuid
+    AccountStatus:
+      type: string
+      enum:
+        - OPPORTUNITY
+        - ACTIVE
+        - DECLINED
+        - LEAD
+        - NO_ACCOUNT
+    CommunityResponse:
+      type: object
+      properties:
+        communityName:
+          type: string
+        type:
+          $ref: "#/components/schemas/CommunityType"
+        rcId:
+          type: string
+        energyCommunityId:
+          type: string
+        managerName:
+          type: string
+        managerEmail:
+          type: string
+          format: email
+        managerPhoneNumber:
+          type: string
+        sharingConcept:
+          $ref: "#/components/schemas/SharingConcept"
+      required:
+        - communityName
+        - type
+        - energyCommunityId
+        - rcId
+        - energyCommunityId
+        - managerName
+        - managerEmail
+        - managerPhoneNumber
+        - sharingConcept
+    CommunityManagerImpersonateResponse:
+      required:
+        - communityId
+      type: object
+      properties:
+        communityId:
+          type: string
+          format: uuid
+        impersonateByEmail:
+          type: string
+          nullable: true
+    ImpersonateRequest:
+      required:
+        - impersonateByEmail
+      type: object
+      properties:
+        impersonateByEmail:
+          type: string
+          nullable: true
+    ImpersonateResponse:
+      required:
+        - accountId
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        impersonateByEmail:
+          type: string
+          nullable: true
+    ParticipantCommunityRole:
+      required:
+        - participantId
+        - communityId
+        - role
+      type: object
+      properties:
+        participantId:
+          type: string
+        communityId:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+    ParticipantPermissionsResponse:
+      required:
+        - accountId
+        - impersonatedBy
+        - communities
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+          nullable: true
+        impersonatedBy:
+          type: string
+          nullable: true
+        communities:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              permissions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PermissionType'
+              participantId:
+                type: string
+                format: uuid
+                nullable: true
+              community:
+                $ref: '#/components/schemas/CommunityResponse'
+    ParticipantCommunityPermissionsResponse:
+      required:
+        - accountId
+        - participantId
+        - permissions
+      type: object
+      properties:
+        accountId:
+          type: string
+          format: uuid
+          nullable: true
+        participantId:
+          type: string
+          format: uuid
+          nullable: true
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PermissionType'
+    ParticipantCommunityRolesResponse:
+      type: array
+      items:
+        $ref: "#/components/schemas/ParticipantCommunityRole"
+    PermissionType:
+      type: string
+      enum:
+        - READ_INVOICES
+        - WRITE_INVOICES
+        - READ_MEMBERS
+        - WRITE_MEMBERS
+        - READ_METERING_POINTS
+        - WRITE_METERING_POINTS
+        - READ_ROLES
+        - WRITE_ROLES
+        - WRITE_COMMUNITY
+        - READ_COMMUNITY_DASHBOARD
+        - READ_COMMUNITY_PROFILE
+        - READ_COMMUNITY_BILLING
+        - READ_OWN_DATA
+        - WRITE_OWN_DATA
+        - MANAGE_BACKOFFICE
+        - MANAGE_IMPERSONATION
+        - MANAGE_MARKET_PROCESSES
+    ProspectFormSubmissionRequest:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          type: object
+          additionalProperties: true
+    Role:
+      type: string
+      enum:
+        - ADMIN
+        - MANAGER
+    SharingConcept:
+      type: string
+      enum:
+        - DYNAMIC
+        - STATIC
+    CommunityType:
+      type: string
+      enum:
+        - EEG_LOCAL
+        - EEG_REGIONAL
+        - BEG
+        - GEA
+    CommunityManagerResponse:
+      required:
+        - communityId
+        - role
+        - email
+      type: object
+      properties:
+        participantId:
+          type: string
+        communityId:
+          type: string
+        role:
+          $ref: "#/components/schemas/Role"
+        email:
+          type: string
+    CommunitySettingsRequest:
+      required:
+        - allowMemberSelfManagement
+      type: object
+      properties:
+        allowMemberSelfManagement:
+          type: boolean
+    CommunitySettingsResponse:
+      required:
+        - allowMemberSelfManagement
+      type: object
+      properties:
+        allowMemberSelfManagement:
+          type: boolean

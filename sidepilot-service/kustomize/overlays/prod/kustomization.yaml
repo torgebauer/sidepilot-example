@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: energycommunities
+
+resources:
+  - ../../base
+  - ingressroute.yaml
+
+labels:
+  - includeSelectors: true
+    pairs:
+      app.kubernetes.io/managed-by: kustomize
+      app.kubernetes.io/part-of: sidepilot
+
+images:
+  - name: at.salzburgag.ds.energycommunities.sidepilot/sidepilot-server
+    newName: ds-images.registry.salzburg-ag.tech/at.salzburgag.ds.energycommunities.sidepilot/sidepilot-server
+    newTag: 0.1.21
+  - name: at.salzburgag.ds.energycommunities.sidepilot/knowledge-system
+    newName: ds-images.registry.salzburg-ag.tech/at.salzburgag.ds.energycommunities.sidepilot/knowledge-system
+    newTag: 0.1.21
+
+patches:
+  - path: pvc-patch.yaml
+  - path: configmap-patch.yaml

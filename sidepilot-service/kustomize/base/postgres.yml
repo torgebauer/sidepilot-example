@@ -1,0 +1,61 @@
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: sidepilot-postgres
+  namespace: energycommunities
+spec:
+  imagePullSecrets:
+    - name: image-pull-secret
+  instances: 1
+  imageName: ds-images.registry.salzburg-ag.tech/at.salzburgag.ds.energycommunities.sidepilot/postgresql-pgvector:16
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: sidepilot-postgres-superuser
+  bootstrap:
+    initdb:
+      database: sidepilot
+      owner: sidepilot_login
+      secret:
+        name: sidepilot-postgres-login
+  managed:
+    roles:
+      - name: sidepilot_login
+        login: true
+        ensure: present
+        passwordSecret:
+          name: sidepilot-postgres-login
+  storage:
+    size: 10Gi
+  affinity:
+    enablePodAntiAffinity: true
+    topologyKey: kubernetes.io/hostname
+    podAntiAffinityType: preferred
+    nodeSelector:
+      agentpool: nodepool
+---
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: sidepilot-database
+  namespace: energycommunities
+spec:
+  name: sidepilot
+  owner: sidepilot_login
+  cluster:
+    name: sidepilot-postgres
+  extensions:
+    - name: vector
+      ensure: present
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: sidepilot-postgres-pod-monitor
+  namespace: energycommunities
+spec:
+  selector:
+    matchLabels:
+      cnpg.io/cluster: sidepilot-postgres
+  podMetricsEndpoints:
+    - port: metrics

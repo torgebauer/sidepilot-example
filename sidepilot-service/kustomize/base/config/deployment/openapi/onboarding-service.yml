@@ -1,0 +1,1098 @@
+openapi: 3.0.1
+info:
+  title: Onboarding Service
+  description: Manager-facing endpoints for the Onboarding Request review queue.
+  contact:
+    name: "Salzburg AG für Energie, Verkehr und Telekommunikation"
+  version: 1.0.0
+paths:
+  /api/onboarding/communities/{communityId}/requests:
+    get:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Lists onboarding requests for a community.
+      operationId: listOnboardingRequests
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+      responses:
+        "200":
+          description: Page of onboarding request summaries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingRequestPageResponse'
+        "403":
+          description: Insufficient privileges
+  /api/onboarding/communities/{communityId}/requests/invite:
+    post:
+      tags:
+        - ONBOARDING_PUBLIC_INVITE
+      summary: Submits a public invite-form onboarding request.
+      operationId: submitPublicInviteOnboardingRequest
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicInviteOnboardingRequest'
+      responses:
+        "201":
+          description: Onboarding request submitted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicInviteOnboardingSubmitResponse'
+        "400":
+          description: Malformed request body.
+        "404":
+          description: Invite link is not valid or no longer active.
+        "429":
+          description: Too many submissions for the invite link.
+
+  /api/onboarding/communities/{communityId}/requests/open-count:
+    get:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Counts onboarding requests awaiting a manager decision.
+      operationId: countOpenOnboardingRequests
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Number of open onboarding requests for the community.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingOpenCountResponse'
+        "403":
+          description: Insufficient privileges
+  /api/onboarding/communities/{communityId}/requests/{requestId}:
+    get:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Returns a single onboarding request.
+      operationId: getOnboardingRequest
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Full onboarding request detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingRequestDetailResponse'
+        "404":
+          description: Request not found in this community
+        "403":
+          description: Insufficient privileges
+    put:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Updates a single onboarding request
+      operationId: updateOnboardingRequest
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditOnboardingRequest'
+      responses:
+        "200":
+          description: Request successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingRequestDetailResponse'
+        "400":
+          description: Invalid request body
+        "404":
+          description: Request not found in this community
+        "403":
+          description: Insufficient privileges
+  /api/onboarding/communities/{communityId}/requests/{requestId}/accept:
+    post:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Accepts an onboarding request.
+      operationId: acceptOnboardingRequest
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptOnboardingRequestBody'
+      responses:
+        "200":
+          description: Updated request detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingRequestDetailResponse'
+        "404":
+          description: Request not found in this community
+        "403":
+          description: Insufficient privileges
+        "409":
+          description: Request is in a state that cannot be accepted
+  /api/onboarding/communities/{communityId}/requests/bulk-accept:
+    post:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Accepts multiple onboarding requests.
+      operationId: bulkAcceptOnboardingRequests
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkAcceptOnboardingRequestsBody'
+      responses:
+        "200":
+          description: Per-id success / failure report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkDecisionsResponse'
+        "403":
+          description: Insufficient privileges
+  /api/onboarding/communities/{communityId}/requests/bulk-reject:
+    post:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Rejects multiple onboarding requests with a shared reason.
+      operationId: bulkRejectOnboardingRequests
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkRejectOnboardingRequestsBody'
+      responses:
+        "200":
+          description: Per-id success / failure report.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkDecisionsResponse'
+        "403":
+          description: Insufficient privileges
+  /api/onboarding/communities/{communityId}/bulk-imports:
+    post:
+      tags:
+        - ONBOARDING_BULK_IMPORT
+      summary: Uploads a filled bulk import .xlsx file.
+      operationId: uploadBulkImport
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Per-row report including the persisted batch id and validation failures.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkImportResponse'
+        "400":
+          description: File-level validation failure (RFC 7807 Problem document).
+        "403":
+          description: Insufficient privileges
+        "422":
+          description: Row validation failed; nothing was persisted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkImportResponse'
+  /api/onboarding/bulk-imports/templates/clean:
+    get:
+      tags:
+        - ONBOARDING_BULK_IMPORT
+      summary: Downloads the empty bulk import .xlsx template.
+      operationId: downloadBulkImportCleanTemplate
+      responses:
+        "200":
+          description: The clean Template_Import.xlsx workbook.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: 'attachment; filename="Template_Import.xlsx"'
+        "403":
+          description: Insufficient privileges
+  /api/onboarding/bulk-imports/templates/example:
+    get:
+      tags:
+        - ONBOARDING_BULK_IMPORT
+      summary: Downloads the example bulk import .xlsx template.
+      operationId: downloadBulkImportExampleTemplate
+      responses:
+        "200":
+          description: The Template_Import_Example.xlsx workbook with sample data.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: 'attachment; filename="Template_Import_Example.xlsx"'
+        "403":
+          description: Insufficient privileges
+  /api/onboarding/communities/{communityId}/requests/{requestId}/reject:
+    post:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Rejects an onboarding request with a reason.
+      operationId: rejectOnboardingRequest
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectOnboardingRequestBody'
+      responses:
+        "200":
+          description: Updated request detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingRequestDetailResponse'
+        "404":
+          description: Request not found in this community
+        "403":
+          description: Insufficient privileges
+        "409":
+          description: Request is in a state that cannot be rejected
+  /api/onboarding/communities/{communityId}/requests/{requestId}/retry-materialization:
+    post:
+      tags:
+        - ONBOARDING_REVIEW
+      summary: Retries CMS materialization for an onboarding request.
+      operationId: retryOnboardingRequestMaterialization
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Current request detail; materialization will complete asynchronously.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OnboardingRequestDetailResponse'
+        "404":
+          description: Request not found in this community
+        "403":
+          description: Insufficient privileges
+        "409":
+          description: Request is in a state that cannot be retried
+components:
+  schemas:
+    OnboardingRequestStatusDto:
+      type: string
+      enum:
+        - DRAFT
+        - SUBMITTED
+        - IN_REVIEW
+        - EDITED
+        - ACCEPTED
+        - REJECTED
+        - MATERIALIZATION_FAILED
+        - MATERIALIZED
+    OnboardingRequestSourceDto:
+      type: string
+      enum:
+        - BULK_IMPORT
+        - JOIN_FORM
+        - EXISTING_MEMBER_MP_ADD
+    MeteringPointTypeDto:
+      type: string
+      enum:
+        - CONSUMPTION
+        - PRODUCTION
+    TaxRateDto:
+      type: string
+      enum:
+        - NONE
+        - TAXABLE
+        - FARMER_TAXABLE
+    OnboardingOpenCountResponse:
+      required:
+        - openCount
+      type: object
+      properties:
+        openCount:
+          type: integer
+          format: int64
+    OnboardingRequestPageResponse:
+      required:
+        - page
+        - pageSize
+        - totalCount
+        - totalPages
+        - result
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int64
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingRequestSummaryResponse'
+    OnboardingRequestSummaryResponse:
+      required:
+        - id
+        - source
+        - status
+        - consumptionMeteringPointCount
+        - productionMeteringPointCount
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        source:
+          $ref: '#/components/schemas/OnboardingRequestSourceDto'
+        status:
+          $ref: '#/components/schemas/OnboardingRequestStatusDto'
+        memberFullName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        consumptionMeteringPointCount:
+          type: integer
+          format: int32
+        productionMeteringPointCount:
+          type: integer
+          format: int32
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        decidedAt:
+          type: string
+          format: date-time
+          nullable: true
+        materializationError:
+          type: string
+          nullable: true
+          description: Populated when status is MATERIALIZATION_FAILED.
+    OnboardingRequestDetailResponse:
+      required:
+        - id
+        - communityId
+        - source
+        - status
+        - member
+        - addresses
+        - meteringPoints
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        communityId:
+          type: string
+          format: uuid
+        source:
+          $ref: '#/components/schemas/OnboardingRequestSourceDto'
+        status:
+          $ref: '#/components/schemas/OnboardingRequestStatusDto'
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        submittedBy:
+          type: string
+          nullable: true
+        decidedAt:
+          type: string
+          format: date-time
+          nullable: true
+        decidedBy:
+          type: string
+          nullable: true
+        decisionReason:
+          type: string
+          nullable: true
+        materializationError:
+          type: string
+          nullable: true
+          description: Populated when status is MATERIALIZATION_FAILED.
+        materialization:
+          $ref: '#/components/schemas/OnboardingMaterializationResponse'
+        member:
+          $ref: '#/components/schemas/OnboardingMemberResponse'
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingAddressResponse'
+        meteringPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/OnboardingMeteringPointResponse'
+        payment:
+          $ref: '#/components/schemas/OnboardingPaymentResponse'
+        note:
+          type: string
+          nullable: true
+          description: Optional note the user submitted with the join form.
+    OnboardingMaterializationResponse:
+      type: object
+      nullable: true
+      description: CMS records produced once the request reaches MATERIALIZED.
+      required:
+        - memberId
+        - addressIds
+        - meteringPointIds
+      properties:
+        memberId:
+          type: string
+          format: uuid
+        addressIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+        meteringPointIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    OnboardingMemberResponse:
+      type: object
+      properties:
+        fullName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        customerNumber:
+          type: string
+          nullable: true
+        accountId:
+          type: string
+          format: uuid
+          nullable: true
+    OnboardingAddressResponse:
+      type: object
+      properties:
+        streetHouseNumber:
+          type: string
+          nullable: true
+        addressAdditions:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        contactName:
+          type: string
+          nullable: true
+        contactEmail:
+          type: string
+          nullable: true
+        vatId:
+          type: string
+          nullable: true
+    OnboardingMeteringPointResponse:
+      required:
+        - id
+        - number
+        - meteringPointType
+        - taxRate
+        - fromDate
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+        gridOperatorId:
+          type: string
+          nullable: true
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointTypeDto'
+        taxRate:
+          $ref: '#/components/schemas/TaxRateDto'
+        energyTariff:
+          type: number
+          nullable: true
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+          nullable: true
+    RejectOnboardingRequestBody:
+      required:
+        - reason
+      type: object
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    AcceptOnboardingRequestBody:
+      type: object
+      properties:
+        note:
+          type: string
+          minLength: 1
+          maxLength: 500
+          nullable: true
+    OnboardingPaymentResponse:
+      type: object
+      nullable: true
+      properties:
+        feedIn:
+          $ref: '#/components/schemas/OnboardingFeedInPaymentResponse'
+        sepa:
+          $ref: '#/components/schemas/OnboardingSepaPaymentResponse'
+    OnboardingFeedInPaymentResponse:
+      type: object
+      nullable: true
+      required:
+        - accountHolder
+        - iban
+      properties:
+        accountHolder:
+          type: string
+        iban:
+          type: string
+    OnboardingSepaPaymentResponse:
+      type: object
+      nullable: true
+      required:
+        - accountHolder
+        - iban
+        - mandateReference
+        - mandateDate
+      properties:
+        accountHolder:
+          type: string
+        iban:
+          type: string
+        mandateReference:
+          type: string
+        mandateDate:
+          type: string
+          format: date
+    BulkAcceptOnboardingRequestsBody:
+      required:
+        - requestIds
+      type: object
+      properties:
+        requestIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+        note:
+          type: string
+          minLength: 1
+          maxLength: 500
+          nullable: true
+    BulkRejectOnboardingRequestsBody:
+      required:
+        - requestIds
+        - reason
+      type: object
+      properties:
+        requestIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
+    BulkDecisionsResponse:
+      x-class-extra-annotation: '@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS)'
+      required:
+        - succeeded
+        - failed
+      type: object
+      properties:
+        succeeded:
+          type: array
+          items:
+            type: string
+            format: uuid
+        failed:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkDecisionFailureResponse'
+    BulkDecisionFailureResponse:
+      required:
+        - requestId
+        - reason
+      type: object
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+    BulkImportResponse:
+      x-class-extra-annotation: '@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.ALWAYS)'
+      required:
+        - batchId
+        - totalRows
+        - parsedRows
+        - createdRequests
+        - failedRows
+      type: object
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        totalRows:
+          type: integer
+          format: int32
+        parsedRows:
+          type: integer
+          format: int32
+        createdRequests:
+          type: integer
+          format: int32
+        failedRows:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkImportRowErrorResponse'
+    BulkImportRowErrorResponse:
+      required:
+        - rowNumber
+        - sheet
+        - errors
+      type: object
+      properties:
+        rowNumber:
+          type: integer
+          format: int32
+        sheet:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/BulkImportFieldErrorResponse'
+    BulkImportFieldErrorResponse:
+      required:
+        - column
+        - message
+      type: object
+      properties:
+        column:
+          type: string
+        message:
+          type: string
+    PublicInviteOnboardingRequest:
+      type: object
+      required:
+        - participant
+        - address
+        - meteringPoints
+        - payment
+        - acceptedTosDataPolicy
+        - acceptedTosDataPolicyAt
+      properties:
+        participant:
+          $ref: '#/components/schemas/PublicInviteParticipantDto'
+        address:
+          $ref: '#/components/schemas/PublicInviteAddressDto'
+        meteringPoints:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PublicInviteMeteringPointDto'
+        payment:
+          $ref: '#/components/schemas/PublicInvitePaymentDto'
+        acceptedTosDataPolicy:
+          type: boolean
+        acceptedTosDataPolicyAt:
+          type: string
+          format: date-time
+        note:
+          type: string
+          nullable: true
+          maxLength: 2000
+          description: Optional note from the user.
+    PublicInviteParticipantDto:
+      type: object
+      required:
+        - fullName
+        - email
+        - currentTaxRate
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 255
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+        phoneNumber:
+          type: string
+          nullable: true
+          maxLength: 255
+        currentTaxRate:
+          $ref: '#/components/schemas/TaxRateDto'
+    PublicInviteAddressDto:
+      type: object
+      required:
+        - streetHouseNumber
+        - postalCode
+        - city
+        - contactName
+        - contactEmail
+      properties:
+        streetHouseNumber:
+          type: string
+          minLength: 1
+          maxLength: 255
+        addressAdditions:
+          type: string
+          nullable: true
+          maxLength: 255
+        postalCode:
+          type: string
+          minLength: 1
+          maxLength: 20
+        city:
+          type: string
+          minLength: 1
+          maxLength: 255
+        contactName:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Personal full name for private or company name for business entity.
+        contactEmail:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+          description: Personal email for private or company email for business entity.
+        vatId:
+          type: string
+          nullable: true
+          maxLength: 50
+          description: Only required for business entity.
+    PublicInviteMeteringPointDto:
+      type: object
+      required:
+        - number
+        - meteringPointType
+        - gridOperatorId
+      properties:
+        number:
+          type: string
+          maxLength: 33
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointTypeDto'
+        gridOperatorId:
+          type: string
+    PublicInvitePaymentDto:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          $ref: '#/components/schemas/PaymentTypeDto'
+        accountOwnerName:
+          type: string
+          nullable: true
+          maxLength: 255
+        iban:
+          type: string
+          nullable: true
+          maxLength: 34
+    PaymentTypeDto:
+      type: string
+      enum:
+        - SEPA
+        - NOT_SPECIFIED
+    PublicInviteOnboardingSubmitResponse:
+      type: object
+      required:
+        - requestId
+        - status
+      properties:
+        requestId:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/OnboardingRequestStatusDto'
+    EditOnboardingRequest:
+      type: object
+      required:
+        - member
+        - addresses
+        - meteringPoints
+      properties:
+        member:
+          $ref: '#/components/schemas/MemberPayloadDto'
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/AddressPayloadDto'
+        meteringPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeteringPointSubmissionDto'
+        payment:
+          $ref: '#/components/schemas/PaymentPayloadDto'
+    MemberPayloadDto:
+      type: object
+      required:
+        - fullName
+        - email
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+          nullable: true
+    AddressPayloadDto:
+      type: object
+      required:
+        - streetHouseNumber
+        - postalCode
+        - city
+        - contactName
+        - contactEmail
+      properties:
+        streetHouseNumber:
+          type: string
+        addressAdditions:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+        city:
+          type: string
+        contactName:
+          type: string
+        contactEmail:
+          type: string
+        vatId:
+          type: string
+          nullable: true
+    MeteringPointSubmissionDto:
+      type: object
+      required:
+        - id
+        - number
+        - meteringPointType
+        - gridOperatorId
+        - taxRate
+        - energyTariff
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+        gridOperatorId:
+          type: string
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointTypeDto'
+        taxRate:
+          $ref: '#/components/schemas/TaxRateDto'
+        energyTariff:
+          type: number
+    PaymentPayloadDto:
+      type: object
+      nullable: true
+      properties:
+        feedIn:
+          $ref: '#/components/schemas/FeedInPaymentPayloadDto'
+        sepa:
+          $ref: '#/components/schemas/SepaPaymentPayloadDto'
+    FeedInPaymentPayloadDto:
+      type: object
+      nullable: true
+      required:
+        - accountHolder
+        - iban
+      properties:
+        accountHolder:
+          type: string
+        iban:
+          type: string
+    SepaPaymentPayloadDto:
+      type: object
+      nullable: true
+      required:
+        - accountHolder
+        - iban
+        - mandateReference
+        - mandateDate
+      properties:
+        accountHolder:
+          type: string
+        iban:
+          type: string
+        mandateReference:
+          type: string
+        mandateDate:
+          type: string
+          format: date
+

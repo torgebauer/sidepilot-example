@@ -1,0 +1,216 @@
+features:
+  - id: members
+    name_de: Mitgliederverwaltung
+    name_en: Member Management
+    description_de: "Teilnehmer anlegen, bearbeiten, verwalten — Adressen, Kontakte, Status"
+    description_en: "Create, update, manage participants — addresses, contacts, status"
+    operations:
+      - getCommunityMembersWA
+      - getParticipantWA
+      - getParticipantProfile
+      - createParticipantWA
+      - updateParticipantWA
+      - getParticipantAddressesWA
+      - getParticipantAddressWA
+      - createParticipantAddressWA
+      - updateParticipantAddressWA
+      - deleteParticipantWA
+      - deleteParticipantAddressWA
+      - getCommunityReportECMS
+
+  - id: payment
+    name_de: Zahlungsoptionen
+    name_en: Payment & SEPA
+    description_de: "Zahlungsarten und SEPA-Lastschrift pro Mitglied und Zählpunkt"
+    description_en: "Payment options and SEPA direct debit per member and metering point"
+    operations:
+      - getCommunityPaymentOptions
+      - getParticipantPaymentOptions
+      - getMeteringPointPaymentOptions
+      - createPaymentOption
+      - updatePaymentOption
+      - deletePaymentOption
+      - selectPaymentOptionForMeteringPoint
+      - updateMeteringPointAssignmentPaymentOptionWA
+
+  - id: metering-points
+    name_de: Zählpunkt-Management
+    name_en: Metering Point Management
+    description_de: "Zählpunkte verwalten, zuweisen, aktivieren, deaktivieren — Netzbetreiber, Adressen"
+    description_en: "Manage metering points — assign, activate, deactivate, grid operators, addresses"
+    operations:
+      - getCommunityMeteringPointAssignmentsWA
+      - createMeteringPointAssignmentWA
+      - updateMeteringPointAssignmentWA
+      - deleteMeteringPointAssignmentWA
+      - updateMeteringPointAssignmentAddressWA
+      - updateMeteringPointAssignmentAdditionalInformationWA
+      - updateMeteringPointAssignment
+      - getAvailableGridOperators
+
+  - id: tariffs
+    name_de: Tarife & Gebühren
+    name_en: Tariffs & Fees
+    description_de: "Energietarife, Steuersätze und Mitgliedsbeiträge pro Zählpunkt"
+    description_en: "Energy tariffs, tax rates, and membership fees per metering point"
+    operations:
+      - updateMeteringPointAssignmentEnergyTariffWA
+      - updateMeteringPointAssignmentTaxRateWA
+      - updateMeteringPointAssignmentMembershipFeeWA
+      - deleteMeteringPointAssignmentMembershipFeeWA
+
+  - id: community_energy
+    name_de: Community-Dashboard & Energiedaten
+    name_en: Community Dashboard & Energy Data
+    description_de: "Community-KPIs, Energiegrafik und verfuegbare Datenbereiche fuer die gesamte Energiegemeinschaft"
+    description_en: "Community KPIs, energy graph, and available data ranges for the whole energy community"
+    operations:
+      - getCommunityDashboard
+      - getCommunityAvailableDataRange
+      - getEnergyGraphDataByCommunity
+
+  - id: participant_energy
+    name_de: Teilnehmer-Energiedaten
+    name_en: Participant Energy Data
+    description_de: "Energiedaten, Erzeugung und Verbrauch fuer einen konkreten Teilnehmer oder Prosumer"
+    description_en: "Energy data, generation, and consumption for one specific participant or prosumer"
+    operations:
+      - getParticipantConsumerDashboard
+      - getParticipantProsumerDashboard
+      - getParticipantConsumerEnergyGraphData
+      - getParticipantProsumerEnergyGraphData
+      - getParticipantMeteringPoints
+
+  - id: data_export
+    name_de: Energiedaten-Export
+    name_en: Energy Data Export
+    description_de: "Energiedaten-Exporte (15-Minuten-Report) anstoßen, auflisten und herunterladen — abhängig vom gewählten Zeitraum der Energiedaten-Seite"
+    description_en: "Create, list, and download energy data exports (15-minute report) — depends on the selected date range of the energy-data page"
+    operations:
+      - createExportJob
+      - listExportJobs
+      - downloadExport
+
+  - id: data_quality
+    name_de: Datenqualitaet
+    name_en: Data Quality
+    description_de: "Datenqualitaetsberichte fuer Energiedaten"
+    description_en: "Data quality reports for energy measurements"
+    operations:
+      - getReport
+
+  - id: admin_energy
+    name_de: Admin-Energiedaten
+    name_en: Admin Energy Data
+    description_de: "Administrative Zaehlpunkt- und Energiedaten-Auswertungen ueber mehrere Teilnehmer oder Zaehlpunkte"
+    description_en: "Administrative metering-point and energy analytics across multiple participants or metering points"
+    operations:
+      - getAdminMeteringPoints
+      - getAdminConsumerDashboard
+      - getAdminConsumerEnergyGraphData
+      - getAdminProsumerDashboard
+      - getAdminProsumerEnergyGraphData
+
+
+  - id: cross_community
+    name_de: Alle meine Energiegemeinschaften — gemeinschaftsübergreifende Auswertung
+    name_en: All my energy communities — cross-community analysis
+    description_de: >-
+      Auswertungen über mehrere Energiegemeinschaften des Kontos. Einstieg ist
+      getParticipantPermissions: es liefert alle Gemeinschaften des Kontos mit
+      ihren IDs (die Seitendaten sind auf die geöffnete Gemeinschaft beschnitten
+      und enthalten die IDs anderer Gemeinschaften nicht). Danach die Fachdaten
+      je Gemeinschaft mit bulk_call über diese IDs abrufen und mit compute_stats
+      zusammenfassen.
+    description_en: >-
+      Analysis across several energy communities of the account. Entry point is
+      getParticipantPermissions, which returns every community of the account
+      with its id; then fan out per community with bulk_call and summarize with
+      compute_stats.
+    operations:
+      - getParticipantPermissions
+
+  - id: users
+    name_de: Benutzerverwaltung
+    name_en: User Management & Permissions
+    description_de: "Benutzerrollen, Berechtigungen, Community-Zuordnung"
+    description_en: "User roles, permissions, community assignment"
+    operations:
+      - getParticipantPermissionsByCommunity
+      - getCommunity
+      - getCommunityProfile
+      - getAccountRoles
+
+  - id: community_management
+    name_de: Gemeinschaft verwalten
+    name_en: Community Management
+    description_de: "Gemeinschaft konfigurieren — Basisdaten, Sichtbarkeit, Logo und Einstellungen der Energiegemeinschaft"
+    description_en: "Configure the community — base information, visibility, logo, and settings of the energy community"
+    operations:
+      - updateCommunityBaseInformation
+      - updateCommunityVisibilityInformation
+      - getCommunityLogo
+      - uploadCommunityLogo
+      - deleteCommunityLogo
+      - getCommunitySettings
+      - updateCommunitySettings
+      - getCommunityPaymentDetails
+      - updateCommunityPaymentDetails
+
+  - id: invite_links
+    name_de: Einladungslinks
+    name_en: Invite Links
+    description_de: "Neue Mitglieder einladen — Einladungslinks erzeugen, erneuern und widerrufen"
+    description_en: "Invite new members — generate, regenerate, and revoke invite links"
+    operations:
+      - getCommunityInviteLink
+      - generateCommunityInviteLink
+      - regenerateCommunityInviteLink
+      - revokeCommunityInviteLink
+
+  - id: onboarding_review
+    name_de: Beitrittsanfragen
+    name_en: Onboarding Requests
+    description_de: "Offene Beitrittsanfragen auflisten, einzeln prüfen, korrigieren/speichern und einzeln annehmen oder ablehnen"
+    description_en: "List open join requests, inspect them individually, correct/save the submission, and accept or reject one request at a time"
+    operations:
+      - listOnboardingRequests
+      - countOpenOnboardingRequests
+      - getOnboardingRequest
+      - updateOnboardingRequest
+      - acceptOnboardingRequest
+      - rejectOnboardingRequest
+
+  - id: billing
+    name_de: Abrechnung
+    name_en: Billing
+    description_de: "Abrechnungsperioden lesen, berechnen (Vorschau), erstellen und veröffentlichen; veröffentlichte Abrechnungen und Rechnungsdetails lesen"
+    description_en: "Read, calculate (preview), create, and publish billing periods; read published billing periods and bill details"
+    operations:
+      - getBillingPeriods
+      - getBillingPeriodById
+      - createBillingPeriod
+      - previewBillingPeriod
+      - publishBillingPeriod
+      - getPublishedBillingPeriods
+      - getPublishedBillingPeriodById
+      - getPublishedBillDetails
+      - getPublishedBillDocument
+
+  - id: market_processes
+    name_de: Marktprozesse & Zählpunkt-Lebenszyklus
+    name_en: Market Processes & Metering Point Lifecycle
+    description_de: "Zählpunkt-Status (aktiv/neu/ausstehend) und Zuordnung über den Marktprozess-Dienst lesen; Zählpunkte registrieren, deaktivieren und Teilnahmefaktor ändern"
+    description_en: "Read metering-point status (active/new/pending) and assignment via the market-process service; register, deactivate, and change the participation factor of metering points"
+    operations:
+      - getMeteringPoints
+      - getAssignedMeteringPoints
+      - getUnassignedMeteringPoints
+      - RegisterMeteringPoints
+      - changeParticipationFactorMeteringPoints
+      - deactivateMeteringPoints
+      - checkIfEligibleToRequestEnergyData
+      - requestEnergyDataForEnergyCommunity
+      - dismissMarketProcesses
+      - getMarketProcess
+      - updateShareFactorMeteringPoints

@@ -1,0 +1,1235 @@
+openapi: 3.0.1
+info:
+  title: Metering Data Service
+  description: This is a backend service for meter measurements.
+  contact:
+    name: "Salzburg AG für Energie, Verkehr und Telekommunikation"
+    url: https://github.com/salzburg-ag
+    email: kundenservice@salzburg-ag.at
+  version: 1.0.0
+paths:
+  /api/communities/{communityId}/data-quality:
+    get:
+      summary: Get the data quality report for a specific community
+      operationId: getReport
+      tags:
+        - DataQuality
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: getReport 200 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataQualityReportResponse'
+        "400":
+          description: Invalid request
+        "403":
+          description: Not authorised
+        "404":
+          description: No energy community found
+        "401":
+          description: User is not authenticated
+  /api/communities/{communityId}/measurements/export:
+    get:
+      summary: Export measurements as CSV for a specific community
+      description: This is a legacy endpoint that will be deprecated in the future. It directly returns a CSV file and may have long response times for large datasets.
+      operationId: exportMeasurementsAsCsv
+      deprecated: true
+      tags:
+        - DataQuality
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "200":
+          description: Measurements exported as CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "403":
+          description: Not authorised
+        "404":
+          description: No energy community found
+        "401":
+          description: User is not authenticated
+  /api/communities/{communityId}/exports:
+    post:
+      summary: Create a new asynchronous export job
+      description: Creates a new asynchronous export job for exporting measurements as a csv file. The job will be processed in the background.
+      operationId: createExportJob
+      tags:
+        - Exports
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - start
+                - end
+              properties:
+                start:
+                  type: string
+                  format: date
+                  description: Start date for the export period
+                end:
+                  type: string
+                  format: date
+                  description: End date for the export period
+      responses:
+        "202":
+          description: Export job created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportJobResponse'
+        "400":
+          description: Invalid request
+        "403":
+          description: Not authorised
+        "404":
+          description: No energy community found
+        "401":
+          description: User is not authenticated
+    get:
+      summary: List all exports for a specific community
+      description: Returns a list of all export jobs for the specified community
+      operationId: listExportJobs
+      tags:
+        - Exports
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: List of export jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExportJobResponse'
+        "400":
+          description: Invalid request
+        "403":
+          description: Not authorised
+        "404":
+          description: No energy community found
+        "401":
+          description: User is not authenticated
+  /api/communities/{communityId}/exports/{exportId}:
+    get:
+      summary: Download a specific export
+      description: Downloads the CSV file for a completed export job
+      operationId: downloadExport
+      tags:
+        - Exports
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: exportId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Export CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "404":
+          description: Export job not found
+        "403":
+          description: Not authorised
+        "401":
+          description: User is not authenticated
+        "409":
+          description: Export job is not completed yet
+  /api/communities/{communityId}/available-data:
+    get:
+      tags:
+        - CommunityDashboard
+      summary: Get the available data range for a community
+      operationId: getCommunityAvailableDataRange
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Available data range"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableDataRangeResponseDto'
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/dashboard:
+    get:
+      tags:
+        - CommunityDashboard
+      summary: Get the community dashboard KPIs
+      description: Get the aggregated EC dashboard KPIs for a specific start and end date.
+      operationId: getCommunityDashboard
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Dashboard kpis"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcDashboardResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/energy-graph:
+    get:
+      tags:
+        - CommunityDashboard
+      summary: Get energy graph data for a provided energy community
+      description: Get aggregated energy graph data for a specific energy community, cumulated for a selected period (start and end date). Resolution is determined dynamically.
+      operationId: getEnergyGraphDataByCommunity
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Energy graph data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyGraphResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/participants/{participantId}/metering-points:
+    get:
+      tags:
+        - ParticipantDashboard
+      summary: Get available metering points by type
+      description: Returns valid metering points for the user, including the available start and end dates for UI boundaries.
+      operationId: getParticipantMeteringPoints
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          required: true
+          description: Filter by CONSUMPTION or GENERATION
+          schema:
+            $ref: '#/components/schemas/MeteringPointType'
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of available metering points.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeteringPointResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/participants/{participantId}/consumer/dashboard:
+    post:
+      tags:
+        - ParticipantDashboard
+      summary: Get consumer dashboard KPIs
+      description: Get consumer dashboard KPIs for a specific start and end date. Supports filtering by multiple metering points.
+      operationId: getParticipantConsumerDashboard
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardRequest'
+      responses:
+        "200":
+          description: "Dashboard kpis, or null if not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsumerDashboardResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/participants/{participantId}/consumer/energy-graph:
+    post:
+      tags:
+        - ParticipantDashboard
+      summary: Get consumer energy graph data
+      description: Get consumer energy graph data for a specific date range. Resolution is dynamically determined by backend.
+      operationId: getParticipantConsumerEnergyGraphData
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardRequest'
+      responses:
+        "200":
+          description: Energy graph data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyGraphResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/participants/{participantId}/prosumer/dashboard:
+    post:
+      tags:
+        - ParticipantDashboard
+      summary: Get the dashboard KPIs of prosumer metering points
+      operationId: getParticipantProsumerDashboard
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardRequest'
+      responses:
+        "200":
+          description: "Dashboard kpis, or null if not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProsumerDashboardResponse'
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/participants/{participantId}/prosumer/energy-graph:
+    post:
+      tags:
+        - ParticipantDashboard
+      summary: Get the prosumer energy graph
+      operationId: getParticipantProsumerEnergyGraphData
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardRequest'
+      responses:
+        "200":
+          description: Get the prosumer energy graph
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyGraphResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/admin/metering-points:
+    get:
+      tags:
+        - AdminDashboard
+      summary: Get all community metering points by type
+      description: Returns all metering points in the community. Requires WRITE_MEMBERS permission.
+      operationId: getAdminMeteringPoints
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: type
+          in: query
+          required: true
+          description: Filter by CONSUMPTION or GENERATION
+          schema:
+            $ref: '#/components/schemas/MeteringPointType'
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of all community metering points.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeteringPointResponse'
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User does not have WRITE_MEMBERS permission
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/admin/consumer/dashboard:
+    post:
+      tags:
+        - AdminDashboard
+      summary: Get consumer dashboard KPIs for community metering points
+      description: Get consumer dashboard KPIs across all community metering points. Requires WRITE_MEMBERS permission.
+      operationId: getAdminConsumerDashboard
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardRequest'
+      responses:
+        "200":
+          description: Consumer dashboard KPIs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsumerDashboardResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User does not have WRITE_MEMBERS permission
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/admin/consumer/energy-graph:
+    post:
+      tags:
+        - AdminDashboard
+      summary: Get consumer energy graph for community metering points
+      description: Get consumer energy graph data across all community metering points. Requires WRITE_MEMBERS permission.
+      operationId: getAdminConsumerEnergyGraphData
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardRequest'
+      responses:
+        "200":
+          description: Energy graph data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyGraphResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User does not have WRITE_MEMBERS permission
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/admin/prosumer/dashboard:
+    post:
+      tags:
+        - AdminDashboard
+      summary: Get prosumer dashboard KPIs for community metering points
+      description: Get prosumer dashboard KPIs across all community metering points. Requires WRITE_MEMBERS permission.
+      operationId: getAdminProsumerDashboard
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardRequest'
+      responses:
+        "200":
+          description: Prosumer dashboard KPIs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProsumerDashboardResponse'
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User does not have WRITE_MEMBERS permission
+        "404":
+          description: Not Found
+  /api/communities/{communityId}/admin/prosumer/energy-graph:
+    post:
+      tags:
+        - AdminDashboard
+      summary: Get prosumer energy graph for community metering points
+      description: Get prosumer energy graph data across all community metering points. Requires WRITE_MEMBERS permission.
+      operationId: getAdminProsumerEnergyGraphData
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DashboardRequest'
+      responses:
+        "200":
+          description: Prosumer energy graph data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnergyGraphResponse'
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User does not have WRITE_MEMBERS permission
+        "404":
+          description: Not Found
+  /api/reports/data-quality:
+    get:
+      tags:
+        - ECMS
+      operationId: getDataQualityReport
+      parameters:
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      responses:
+        "200":
+          description: getDataQualityReport 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataQualityItem'
+components:
+  schemas:
+    AvailableDataRangeResponseDto:
+      required:
+        - minDate
+        - maxDate
+      type: object
+      properties:
+        minDate:
+          type: string
+          format: date
+        maxDate:
+          type: string
+          format: date
+    DashboardMetadata:
+      required:
+        - intervalEnd
+        - intervalStart
+        - resolution
+        - unit
+      type: object
+      properties:
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        intervalStart:
+          type: string
+          format: date-time
+        intervalEnd:
+          type: string
+          format: date-time
+        unit:
+          type: string
+    DashboardResponse:
+      required:
+        - ecConsumption
+        - metadata
+        - selfSufficiency
+        - totalConsumption
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/DashboardMetadata'
+        ecConsumption:
+          $ref: '#/components/schemas/EcConsumption'
+        totalConsumption:
+          $ref: '#/components/schemas/TotalConsumption'
+        selfSufficiency:
+          $ref: '#/components/schemas/SelfSufficiency'
+    ConsumerDashboardResponse:
+      required:
+        - ecConsumption
+        - metadata
+        - selfSufficiency
+        - totalConsumption
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/DashboardMetadata'
+        ecConsumption:
+          $ref: '#/components/schemas/EcConsumption'
+        totalConsumption:
+          $ref: '#/components/schemas/TotalConsumption'
+        selfSufficiency:
+          $ref: '#/components/schemas/SelfSufficiency'
+    DataQuality:
+      required:
+        - complete
+        - level
+        - missingActivation
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        complete:
+          type: boolean
+        level:
+          $ref: '#/components/schemas/QualityLevel'
+        missingActivation:
+          type: boolean
+    DataQualityItem:
+      required:
+        - communityId
+        - date
+        - marketParticipationNumber
+        - meteringPointNumber
+        - quality
+      type: object
+      properties:
+        meteringPointNumber:
+          type: string
+        marketParticipationNumber:
+          type: string
+        date:
+          type: string
+          format: date
+        quality:
+          type: string
+        communityId:
+          type: string
+    DataQualityReportResponse:
+      required:
+        - consumptionPoints
+        - generationPoints
+      type: object
+      properties:
+        consumptionPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualityItemConsumption'
+        generationPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/QualityItemProduction'
+    EcConsumption:
+      required:
+        - consumedShareEcProduction
+        - totalShareEcProduction
+        - unusedShareEcProduction
+      type: object
+      properties:
+        totalShareEcProduction:
+          type: number
+        consumedShareEcProduction:
+          type: number
+        unusedShareEcProduction:
+          type: number
+    EcDashboardResponse:
+      required:
+        - consumption
+        - metadata
+        - production
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/DashboardMetadata'
+        production:
+          $ref: '#/components/schemas/TotalEcProduction'
+        consumption:
+          $ref: '#/components/schemas/TotalEcConsumption'
+    EnergyGraphData:
+      required:
+        - data
+        - id
+      type: object
+      properties:
+        id:
+          type: string
+        data:
+          type: array
+          items:
+            type: number
+    EnergyGraphMetadata:
+      required:
+        - intervalEnd
+        - intervalStart
+        - max
+        - min
+        - resolution
+        - unit
+      type: object
+      properties:
+        resolution:
+          $ref: '#/components/schemas/Resolution'
+        intervalStart:
+          type: string
+          format: date-time
+        intervalEnd:
+          type: string
+          format: date-time
+        min:
+          type: integer
+          format: int64
+        max:
+          type: integer
+          format: int64
+        unit:
+          type: string
+    EnergyGraphResponse:
+      required:
+        - areas
+        - metadata
+        - timestamps
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/EnergyGraphMetadata'
+        areas:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnergyGraphData'
+        timestamps:
+          type: array
+          items:
+            type: string
+            format: date-time
+    MeteringPointResponse:
+      required:
+        - meteringPointId
+        - meteringPointNumber
+        - type
+        - startDate
+      type: object
+      properties:
+        meteringPointId:
+          type: string
+          format: uuid
+        meteringPointNumber:
+          type: string
+        type:
+          $ref: '#/components/schemas/MeteringPointType'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        additionalInfo:
+          type: string
+          nullable: true
+    MeteringPointType:
+      type: string
+      enum:
+        - CONSUMPTION
+        - GENERATION
+    ProsumerContribution:
+      required:
+        - myContribution
+        - theirContribution
+        - totalContribution
+      type: object
+      properties:
+        myContribution:
+          type: number
+        theirContribution:
+          type: number
+        totalContribution:
+          type: number
+    ProsumerDashboardResponse:
+      required:
+        - contribution
+        - metadata
+        - sharedEnergy
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/DashboardMetadata'
+        contribution:
+          $ref: '#/components/schemas/ProsumerContribution'
+        sharedEnergy:
+          $ref: '#/components/schemas/ProsumerSharedEnergy'
+    ProsumerSharedEnergy:
+      required:
+        - sharedEnergyToEc
+        - sharedEnergyToGrid
+        - totalSharedEnergy
+      type: object
+      properties:
+        totalSharedEnergy:
+          type: number
+        sharedEnergyToEc:
+          type: number
+        sharedEnergyToGrid:
+          type: number
+    QualityItemConsumption:
+      required:
+        - consumption
+        - aggregatedDataQuality
+        - qualityItems
+        - meteringPointNumber
+        - selfSufficiency
+        - share
+        - meteringPointId
+      type: object
+      properties:
+        meteringPointId:
+          type: string
+          format: uuid
+        meteringPointNumber:
+          type: string
+        aggregatedDataQuality:
+          $ref: '#/components/schemas/DataQuality'
+        qualityItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataQuality'
+        consumption:
+          type: number
+        share:
+          type: number
+        selfSufficiency:
+          type: number
+    QualityItemProduction:
+      required:
+        - contribution
+        - aggregatedDataQuality
+        - qualityItems
+        - generation
+        - meteringPointNumber
+        - surplus
+        - meteringPointId
+      type: object
+      properties:
+        meteringPointId:
+          type: string
+          format: uuid
+        meteringPointNumber:
+          type: string
+        aggregatedDataQuality:
+          $ref: '#/components/schemas/DataQuality'
+        qualityItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataQuality'
+        generation:
+          type: number
+        surplus:
+          type: number
+        contribution:
+          type: number
+    QualityLevel:
+      type: string
+      enum:
+        - L1_L2
+        - L3
+    Resolution:
+      type: string
+      enum:
+        - QUARTER_HOUR
+        - DAY
+    SelfSufficiency:
+      required:
+        - consumedShareEcProduction
+        - gridConsumption
+        - selfSufficiencyPercentage
+        - totalConsumption
+      type: object
+      properties:
+        selfSufficiencyPercentage:
+          type: number
+        gridConsumption:
+          type: number
+        consumedShareEcProduction:
+          type: number
+        totalConsumption:
+          type: number
+    TotalConsumption:
+      required:
+        - gridConsumption
+        - totalConsumption
+      type: object
+      properties:
+        totalConsumption:
+          type: number
+        gridConsumption:
+          type: number
+    TotalEcConsumption:
+      required:
+        - consumedFromEc
+        - consumedFromGrid
+        - percentage
+        - totalConsumed
+      type: object
+      properties:
+        totalConsumed:
+          type: number
+        consumedFromGrid:
+          type: number
+        consumedFromEc:
+          type: number
+        percentage:
+          type: number
+    TotalEcProduction:
+      required:
+        - consumed
+        - surplus
+        - totalProduced
+      type: object
+      properties:
+        totalProduced:
+          type: number
+        consumed:
+          type: number
+        surplus:
+          type: number
+    DashboardRequest:
+      type: object
+      required:
+        - startDate
+        - endDate
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        meteringPointIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+    ExportJobResponse:
+      required:
+        - id
+        - communityId
+        - start
+        - end
+        - createdAt
+        - status
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the export job
+        communityId:
+          type: string
+          format: uuid
+          description: ID of the community for which the export was created
+        start:
+          type: string
+          format: date
+          description: Start date of the export period
+        end:
+          type: string
+          format: date
+          description: End date of the export period
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time when the export job was created
+        finishedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date and time when the export job was completed (null if not completed)
+        status:
+          type: string
+          enum: [ PENDING, IN_PROGRESS, COMPLETED, FAILED ]
+          description: Current status of the export job
+        fileUrl:
+          type: string
+          nullable: true
+          description: URL to download the generated CSV file (null if not completed)

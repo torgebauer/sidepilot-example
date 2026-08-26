@@ -1,0 +1,3470 @@
+openapi: 3.0.1
+info:
+  title: Community Management Service
+  description: This is the backend server for the management of energy communities.
+  contact:
+    name: "Salzburg AG für Energie, Verkehr und Telekommunikation"
+    url: https://github.com/salzburg-ag
+    email: kundenservice@salzburg-ag.at
+  version: 1.0.0
+paths:
+  /api/community-management/available-grid-operators:
+    get:
+      tags:
+        - GRID_OPERATOR
+      summary: Get list of available grid operators
+      operationId: getAvailableGridOperators
+      responses:
+        "200":
+          description: getAvailableGridOperators 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GridOperatorResponse'
+  /api/community-management/grid-operators:
+    get:
+      tags:
+        - ECMS_COMMUNITY
+      summary: Gets a list of all grid operators
+      operationId: getGridOperatorsECMS
+      responses:
+        '200':
+          description: response with all grid operators list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GridOperatorResponse'
+        "403":
+          description: Insufficient privileges
+  /api/community-management/grid-operators/{gridOperatorId}:
+    put:
+      tags:
+        - ECMS_COMMUNITY
+      summary: update editable fields of a grid operator
+      operationId: updateGridOperator
+      parameters:
+        - name: gridOperatorId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GridOperatorRequest'
+        required: true
+      responses:
+        '200':
+          description: response with updated grid operator information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GridOperatorResponse'
+        "403":
+          description: Insufficient privileges
+  /api/community-management/communities:
+    get:
+      tags:
+        - ECMS_COMMUNITY
+      summary: Gets a pageable list of all the communities
+      operationId: getCommunitiesECMS
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+      responses:
+        "200":
+          description: Response with the list of all the communities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunitySearchResponse'
+        "403":
+          description: Insufficient privileges
+    post:
+      tags:
+        - ECMS_COMMUNITY
+      summary: Creates a community
+      operationId: createCommunityECMS
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunityRequest'
+        required: true
+      responses:
+        "200":
+          description: Response with the created community
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityResponse'
+        "403":
+          description: Insufficient privileges
+  /api/community-management/communities/{communityId}:
+    get:
+      summary: Gets a community by id
+      operationId: getCommunity
+      tags:
+        - COMMUNITY
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Community data, or null if community not found"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityResponse'
+        "403":
+          description: Insufficient privileges
+    put:
+      tags:
+        - ECMS_COMMUNITY
+      summary: Updates a community
+      operationId: updateCommunityECMS
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunityRequest'
+        required: true
+      responses:
+        "200":
+          description: Response with the updated community
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityResponse'
+        "403":
+          description: Insufficient privileges
+  /api/community-management/communities/{communityId}/base-information:
+    put:
+      tags:
+        - COMMUNITY
+      summary: Updates community base information
+      operationId: updateCommunityBaseInformation
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunityBaseInformationRequest'
+        required: true
+      responses:
+        "200":
+          description: Response with the updated community
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityResponse'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+  /api/community-management/communities/{communityId}/visibility:
+    put:
+      tags:
+        - COMMUNITY
+      summary: Updates community visibility information
+      operationId: updateCommunityVisibilityInformation
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunityVisibilityRequest'
+        required: true
+      responses:
+        "200":
+          description: Response with the updated community
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityResponse'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+  /api/community-management/communities/{communityId}/notification-settings:
+    put:
+      tags:
+        - COMMUNITY
+      summary: Updates community notification settings
+      operationId: updateCommunityNotificationSettings
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunityNotificationSettingsRequest'
+        required: true
+      responses:
+        "200":
+          description: Response with the updated community
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityResponse'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+  /api/community-management/communities/{communityId}/tariffs:
+    put:
+      tags:
+        - COMMUNITY
+      summary: Updates community tariffs
+      operationId: updateCommunityTariffs
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunityTariffRequest'
+      responses:
+        "200":
+          description: Community tariffs updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityTariffResponse'
+        "400":
+          description: Invalid input
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+  /api/community-management/communities/{communityId}/membership-fee:
+    put:
+      tags:
+        - COMMUNITY
+      summary: Update community membership fee
+      operationId: updateCommunityMembershipFee
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunityMembershipFeeRequest'
+      responses:
+        "200":
+          description: Community membership fee updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityMembershipFeeResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+  /api/community-management/communities/{communityId}/spreadsheet:
+    get:
+      tags:
+        - ECMS_COMMUNITY
+      summary: Gets or creates an Excel report for the community
+      operationId: getCommunityReportECMS
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response with the report for the community
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+                description: Excel report file
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: 'attachment; filename="community_management_{communityId}.xlsx"'
+        "404":
+          description: No report found or generated
+        "403":
+          description: Insufficient privileges
+  /api/community-management/communities/{communityId}/logo:
+    put:
+      tags:
+        - COMMUNITY_LOGO
+      summary: Upload or update a community logo
+      description: >
+        Uploads a JPG/JPEG/PNG/WebP image as the community logo. The image ratio must between 3:4 to 4:3 (inclusive), min 100px on longest edge.
+      operationId: uploadCommunityLogo
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "204":
+          description: Logo uploaded successfully
+        "400":
+          description: >
+            Invalid image: not a PNG, not square, or dimensions outside the
+            allowed 150x150 to 500x500 range.
+        "404":
+          description: Community not found
+    get:
+      tags:
+        - COMMUNITY_LOGO
+      summary: Get the community logo
+      operationId: getCommunityLogo
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: The community logo
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Community or logo not found
+    delete:
+      tags:
+        - COMMUNITY_LOGO
+      summary: Delete the community logo
+      operationId: deleteCommunityLogo
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Logo deleted successfully
+        "404":
+          description: Community not found
+  /api/community-management/communities/{communityId}/invite-link:
+    get:
+      tags:
+        - COMMUNITY_INVITE_LINK
+      summary: Get current invite link state
+      operationId: getCommunityInviteLink
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Current invite link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteLinkResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+    post:
+      tags:
+        - COMMUNITY_INVITE_LINK
+      summary: Generate an invite link
+      description: >
+        Creates a new invite link for the community. Rejected if an active
+        invite link already exists. The community must have isOpenToJoin enabled.
+      operationId: generateCommunityInviteLink
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "201":
+          description: Invite link generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteLinkResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+        "409":
+          description: Active invite link already exists
+        "422":
+          description: Join requests are not enabled
+  /api/community-management/communities/{communityId}/invite-link/regenerate:
+    post:
+      tags:
+        - COMMUNITY_INVITE_LINK
+      summary: Regenerate invite link
+      description: >
+        Atomically revokes the existing active invite link and creates a new one.
+        The old link immediately stops accepting submissions.
+      operationId: regenerateCommunityInviteLink
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Invite link regenerated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteLinkResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+        "409":
+          description: Active invite link already exists
+        "422":
+          description: Join requests are not enabled
+  /api/community-management/communities/{communityId}/invite-link/revoke:
+    post:
+      tags:
+        - COMMUNITY_INVITE_LINK
+      summary: Revoke invite link
+      description: >
+        Revokes the active invite link. Revoked links can never be reactivated
+        and never accept submissions again.
+      operationId: revokeCommunityInviteLink
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Invite link revoked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InviteLinkResponse"
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+        "409":
+          description: Active invite link already exists
+  /api/community-management/communities/partners:
+    get:
+      tags:
+        - ECMS_COMMUNITY_PARTNER
+      summary: Get partners in all communities
+      description: Get list of partners with number of managed communities for each partner
+      operationId: getCommunityPartners
+      responses:
+        "200":
+          description: Partner retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PartnerResponse'
+        "400":
+          description: Invalid partner request
+        "404":
+          description: Community not found
+  /api/community-management/communities/members:
+    get:
+      tags:
+        - ECMS_COMMUNITY
+      summary: Gets a paginated list of all members across all communities
+      description: >
+        Returns every member (participant) in every community with their
+        metering point assignments and community identifier fields. The
+        response is paginated on members.
+      operationId: getCommunityMembersECMS
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+      responses:
+        "200":
+          description: Response with a paginated list of all community members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EcmsCommunityMembersSearchResponse'
+        "403":
+          description: Insufficient privileges
+  /api/community-management/communities/{communityId}/partner:
+    put:
+      tags:
+        - ECMS_COMMUNITY_PARTNER
+      summary: Update community partner
+      description: Set or update community partner
+      operationId: updateCommunityPartner
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerRequest'
+      responses:
+        "200":
+          description: Partner updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityResponse'
+        "400":
+          description: Invalid partner request
+        "404":
+          description: Community not found
+  /api/community-management/web-app/communities/{communityId}/members:
+    get:
+      tags:
+        - WEB_APP_ADMIN_COMMUNITY_MEMBER
+      summary: Gets a sorted list of community members
+      operationId: getCommunityMembersWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response with sorted list of community members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityMemberSearchResponse'
+        "403":
+          description: Insufficient privileges
+  /api/community-management/web-app/communities/{communityId}/metering-point-assignments:
+    get:
+      tags:
+        - WEB_APP_ADMIN_METERING_POINT_ASSIGNMENTS
+      summary: Gets a list of metering point assignments in the community
+      operationId: getCommunityMeteringPointAssignmentsWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: getCommunityMeteringPointAssignmentsWA 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CommunityMeteringPointAssignmentSearchResult'
+  /api/community-management/web-app/communities/{communityId}/participants/:
+    post:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Add participant
+      operationId: createParticipantWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaParticipantRequest'
+        required: true
+      responses:
+        "200":
+          description: Participant created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaParticipantResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}:
+    get:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Get participant by id
+      operationId: getParticipantWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response with a participant data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaParticipantResponse'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: No participant found
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant
+      operationId: updateParticipantWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaParticipantRequest'
+        required: true
+      responses:
+        "200":
+          description: Participant updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaParticipantResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant not found
+    delete:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Delete participant by id
+      operationId: deleteParticipantWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Participant deleted successfully
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/addresses:
+    get:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Get all addresses of a participant
+      operationId: getParticipantAddressesWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: getParticipantAddressesWA 200 response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParticipantAddressResponse'
+    post:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Add address to participant
+      operationId: createParticipantAddressWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantAddressRequest'
+        required: true
+      responses:
+        "200":
+          description: Address added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantAddressResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/addresses/{addressId}:
+    get:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Get a specific address of a participant
+      operationId: getParticipantAddressWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Participant address data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantAddressResponse'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or address not found
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant address
+      operationId: updateParticipantAddressWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParticipantAddressRequest'
+        required: true
+      responses:
+        "200":
+          description: Address updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantAddressResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or address not found
+    delete:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Delete participant address
+      operationId: deleteParticipantAddressWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Address deleted successfully
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or address not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments:
+    post:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Add metering point assignment to participant
+      operationId: createMeteringPointAssignmentWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeteringPointAssignmentsRequest'
+        required: true
+      responses:
+        "200":
+          description: Metering point added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/MeteringPointNumberUniqueProblem'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant metering point assignment basic information
+      operationId: updateMeteringPointAssignmentWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BasicMeteringPointAssignmentDataRequest'
+        required: true
+      responses:
+        "200":
+          description: Metering point assignment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+    delete:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Delete metering point assignment from participant
+      operationId: deleteMeteringPointAssignmentWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Metering point assignment removed successfully
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}/without-activation-check:
+    delete:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Delete metering point assignment from participant without checking activation
+      operationId: deleteMeteringPointAssignmentWithoutActivationCheck
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Metering point assignment removed successfully
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}/address:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant metering assignment point address
+      operationId: updateMeteringPointAssignmentAddressWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeteringPointAssignmentAddressRequest'
+        required: true
+      responses:
+        "200":
+          description: Metering point assignment addresss updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}/energy-tariff:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant metering point assignment tariff
+      operationId: updateMeteringPointAssignmentEnergyTariffWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeteringPointAssignmentEnergyTariffRequest'
+        required: true
+      responses:
+        "200":
+          description: Metering point assignment energy tariff updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}/payment-option:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant feed in metering point assignment payment options
+      operationId: updateMeteringPointAssignmentPaymentOptionWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentDetailsRequest'
+      responses:
+        "200":
+          description: Metering point assignment payment options updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}/tax-rate:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant metering point assignment tax rate
+      operationId: updateMeteringPointAssignmentTaxRateWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeteringPointAssignmentTaxRateRequest'
+        required: true
+      responses:
+        "200":
+          description: Metering point assignment tax rate updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}/assignment:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Set the period for a metering point assignment
+      operationId: updateMeteringPointAssignment
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeteringPointAssignmentRequest'
+        required: true
+      responses:
+        "200":
+          description: Metering point assignment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/MeteringPointNumberUniqueProblem'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}/additional-information:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant metering point additional information
+      operationId: updateMeteringPointAssignmentAdditionalInformationWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeteringPointAssignmentAdditionalInformationRequest'
+        required: true
+      responses:
+        "200":
+          description: Metering point assignment additional information updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/community-management/web-app/communities/{communityId}/participants/{participantId}/metering-point-assignments/{meteringPointAssignmentId}/membership-fee:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Update participant metering point membership fee
+      operationId: updateMeteringPointAssignmentMembershipFeeWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeteringPointMembershipFeeRequest'
+        required: true
+      responses:
+        "200":
+          description: Metering point assignment membership fee updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+    delete:
+      tags:
+        - WEB_APP_ADMIN_PARTICIPANT
+      summary: Delete participant metering point membership fee
+      operationId: deleteMeteringPointAssignmentMembershipFeeWA
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Metering point assignment membership fee deleted successfully
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or metering point assignment not found
+  /api/v2/community-management/communities/{communityId}/profile:
+    get:
+      tags:
+        - WEB_APP_PARTICIPANT
+      summary: Get community profile
+      operationId: getCommunityProfile
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Community profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityProfileResponse'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Community not found
+  /api/v2/community-management/communities/{communityId}/participants/{participantId}/profile:
+    get:
+      tags:
+        - WEB_APP_PARTICIPANT
+      summary: Get participant
+      operationId: getParticipantProfile
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Participant profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileResponse'
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant not found
+  /api/community-management/m2m/communities/{communityId}:
+    get:
+      tags:
+        - M2M_COMMUNITY_DETAILS
+      summary: Gets detailed data for an energy community including all participant and metering point details
+      operationId: getCommunityDetailsM2M
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successfully retrieved community details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityDetailsResponse'
+        "404":
+          description: Community not found.
+        "401":
+          description: Unauthorized.
+  /api/community-management/ecms/communities/{communityId}/payment-details:
+    get:
+      tags:
+        - COMMUNITY_PAYMENT_DETAILS
+      summary: Get payment details for a community
+      operationId: getCommunityPaymentDetails
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Payment details successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityPaymentDetailsResponse'
+        "404":
+          description: Payment details not found
+        "403":
+          description: Insufficient privileges
+    post:
+      tags:
+        - COMMUNITY_PAYMENT_DETAILS
+      summary: Create or update payment details for a community
+      operationId: updateCommunityPaymentDetails
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunityPaymentDetailsRequest'
+        required: true
+      responses:
+        "200":
+          description: Payment details successfully created or updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityPaymentDetailsResponse'
+        "404":
+          description: Community not found
+        "403":
+          description: Insufficient privileges
+    delete:
+      tags:
+        - COMMUNITY_PAYMENT_DETAILS
+      summary: Delete payment details for a community
+      operationId: deleteCommunityPaymentDetails
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Payment details deleted successfully
+        "404":
+          description: Community or payment details not found
+        "403":
+          description: Insufficient privileges
+  /api/community-management/web-app/community/{communityId}/metering-points/{meteringPointId}:
+    patch:
+      tags:
+        - WEB_APP_ADMIN_PAYMENT_OPTION
+      summary: Select payment option for metering point
+      operationId: selectPaymentOptionForMeteringPoint
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: meteringPointId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectPaymentOptionRequest'
+        required: true
+      responses:
+        "200":
+          description: Payment option successfully selected for metering point
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SelectPaymentOptionResponse'
+        "404":
+          description: Metering point or payment option not found
+        "403":
+          description: Insufficient privileges
+  /api/community-management/web-app/community/{communityId}/participants/{participantId}/metering-points/{meteringPointId}/payment-options:
+    get:
+      tags:
+        - WEB_APP_ADMIN_PAYMENT_OPTION
+      summary: Get current payment options associated with a specific metering point
+      operationId: getMeteringPointPaymentOptions
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: meteringPointId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Accept-Version
+          in: header
+          description: API version
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response with metering point's payment options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOptionResponse'
+        "404":
+          description: Metering point not found
+        "403":
+          description: Insufficient privileges
+  /api/community-management/web-app/community/{communityId}/participants/{participantId}/payment-options:
+    get:
+      tags:
+        - WEB_APP_ADMIN_PAYMENT_OPTION
+      summary: Get a list of all the participant's payment options
+      operationId: getParticipantPaymentOptions
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Response with a list of all the participant's payment options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantPaymentOptionsResponse'
+        "404":
+          description: Participant not found
+        "403":
+          description: Insufficient privileges
+    post:
+      tags:
+        - WEB_APP_ADMIN_PAYMENT_OPTION
+      summary: Add SEPA direct debit payment option to participant
+      operationId: createPaymentOption
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentOptionRequest'
+        required: true
+      responses:
+        "201":
+          description: SEPA direct debit payment option added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOptionResponse'
+        "400":
+          description: SEPA direct debit data is incomplete
+        "404":
+          description: Participant not found
+        "403":
+          description: Payment option not SEPA direct debit
+  /api/community-management/web-app/community/{communityId}/participants/{participantId}/payment-options/{paymentOptionId}:
+    put:
+      tags:
+        - WEB_APP_ADMIN_PAYMENT_OPTION
+      summary: Update SEPA direct debit payment option
+      operationId: updatePaymentOption
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: paymentOptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentOptionRequest'
+        required: true
+      responses:
+        "200":
+          description: SEPA direct debit Payment option successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOptionResponse'
+        "400":
+          description: SEPA direct debit data is incomplete
+        "404":
+          description: Participant or payment option not found
+        "403":
+          description: Payment option not SEPA direct debit
+    delete:
+      tags:
+        - WEB_APP_ADMIN_PAYMENT_OPTION
+      summary: Delete SEPA direct debit payment option
+      operationId: deletePaymentOption
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: paymentOptionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: SEPA payment deleted successfully
+        "400":
+          description: Request validation error
+        "403":
+          description: Insufficient privileges
+        "404":
+          description: Participant or payment option not found
+  /api/community-management/web-app/community/{communityId}/payment-options:
+    get:
+      tags:
+        - WEB_APP_ADMIN_PAYMENT_OPTION
+      summary: Get all payment options associated with metering points within the
+        community
+      operationId: getCommunityPaymentOptions
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Response with all community metering points' payment options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommunityPaymentOptionsResponse'
+        "404":
+          description: Community not found
+        "403":
+          description: Insufficient privileges
+  /api/invite/community/info:
+    get:
+      tags:
+        - COMMUNITY_PUBLIC_INVITE
+      summary: Get community info by public invite link
+      operationId: getCommunityInfoByInviteLink
+      parameters:
+        - name: communityInviteLink
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Community public info response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCommunityInfoResponse'
+        "404":
+          description: Community public info not found
+  /api/invite/community/logo:
+    get:
+      tags:
+        - COMMUNITY_LOGO
+      summary: Get the community logo by public invite link
+      operationId: getCommunityLogoByInviteLink
+      parameters:
+        - name: communityInviteLink
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: The community logo
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Community or logo not found
+components:
+  schemas:
+    BasicMeteringPointAssignmentDataRequest:
+      required:
+        - gridOperatorId
+        - meteringPointType
+        - number
+      type: object
+      properties:
+        number:
+          type: string
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointType'
+        gridOperatorId:
+          type: string
+    CommunityAddressRequest:
+      required:
+        - city
+        - postalCode
+        - streetHouseNumber
+      type: object
+      properties:
+        streetHouseNumber:
+          minLength: 1
+          type: string
+        addressAdditions:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        postalCode:
+          minLength: 1
+          type: string
+        city:
+          minLength: 1
+          type: string
+    CommunityAddressResponse:
+      required:
+        - city
+        - id
+        - postalCode
+        - streetHouseNumber
+      type: object
+      properties:
+        id:
+          type: string
+        streetHouseNumber:
+          type: string
+        addressAdditions:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+    CommunityMemberSearchResponse:
+      required:
+        - communityId
+        - result
+      type: object
+      properties:
+        communityId:
+          type: string
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunityMemberSearchResult'
+    CommunityMemberSearchResult:
+      required:
+        - consumptionMeteringPointAssignments
+        - email
+        - fullName
+        - memberJoinDate
+        - participantId
+        - productionMeteringPointAssignments
+        - accountId
+      type: object
+      properties:
+        participantId:
+          type: string
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+          nullable: true
+        email:
+          type: string
+        productionMeteringPointAssignments:
+          type: integer
+          format: int32
+        consumptionMeteringPointAssignments:
+          type: integer
+          format: int32
+        memberJoinDate:
+          type: string
+          format: date
+        accountId:
+          type: string
+          format: uuid
+          nullable: true
+    CommunityMeteringPointAssignmentSearchResult:
+      required:
+        - createdAt
+        - currentEnergyTariff
+        - currentTaxRate
+        - gridOperator
+        - id
+        - meteringPointType
+        - number
+        - participantId
+        - orderId
+      type: object
+      properties:
+        id:
+          type: string
+        number:
+          type: string
+        currentTaxRate:
+          $ref: '#/components/schemas/TaxRate'
+        contactName:
+          type: string
+          nullable: true
+        contactEmail:
+          type: string
+          nullable: true
+        address:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MeteringPointAssignmentAddressReponse'
+        currentEnergyTariff:
+          type: number
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointType'
+        createdAt:
+          type: string
+          format: date-time
+        paymentDetails:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/PaymentDetailsResponse'
+        participantId:
+          type: string
+        gridOperator:
+          $ref: '#/components/schemas/GridOperatorResponse'
+        orderId:
+          type: integer
+        additionalInformation:
+          type: string
+          nullable: true
+        membershipFee:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MeteringPointMembershipFeeResponse'
+    CommunityProfileResponse:
+      required:
+        - communityName
+        - energyCommunityId
+        - id
+        - managerEmail
+        - managerName
+        - managerPhoneNumber
+        - rcId
+        - sharingConcept
+        - type
+        - managerAccountId
+      type: object
+      properties:
+        id:
+          type: string
+        rcId:
+          type: string
+        energyCommunityId:
+          type: string
+        communityName:
+          type: string
+        type:
+          $ref: '#/components/schemas/CommunityType'
+        managerName:
+          type: string
+        managerEmail:
+          type: string
+        managerPhoneNumber:
+          type: string
+        sharingConcept:
+          $ref: '#/components/schemas/SharingConcept'
+        participantId:
+          type: string
+          nullable: true
+        managerAccountId:
+          type: string
+          format: uuid
+          nullable: true
+    CommunityRequest:
+      required:
+        - communityAddress
+        - communityName
+        - energyCommunityId
+        - legalEntityNumber
+        - managerEmail
+        - managerName
+        - marketParticipationNumber
+        - sharingConcept
+        - status
+        - taxable
+      type: object
+      properties:
+        marketParticipationNumber:
+          maxLength: 255
+          type: string
+        energyCommunityId:
+          maxLength: 255
+          type: string
+        customerId:
+          maxLength: 255
+          type: string
+          nullable: true
+        status:
+          $ref: '#/components/schemas/CommunityStatus'
+        communityName:
+          maxLength: 255
+          type: string
+        legalEntityNumber:
+          maxLength: 255
+          type: string
+        type:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/CommunityType'
+        communityAddress:
+          $ref: '#/components/schemas/CommunityAddressRequest'
+        taxable:
+          type: boolean
+        uid:
+          type: string
+          nullable: true
+        managerName:
+          maxLength: 255
+          type: string
+        managerEmail:
+          maxLength: 255
+          type: string
+        managerPhoneNumber:
+          maxLength: 255
+          type: string
+          nullable: true
+        sharingConcept:
+          $ref: '#/components/schemas/SharingConcept'
+        description:
+          type: string
+          maxLength: 1000
+          nullable: true
+        isPublicFindable:
+          type: boolean
+          nullable: true
+        isOpenToJoin:
+          type: boolean
+          nullable: true
+    CommunityBaseInformationRequest:
+      required:
+        - communityName
+        - communityAddress
+        - managerName
+        - managerPhoneNumber
+      type: object
+      properties:
+        communityName:
+          maxLength: 255
+          type: string
+        communityAddress:
+          $ref: '#/components/schemas/CommunityAddressRequest'
+        managerName:
+          maxLength: 255
+          type: string
+        managerPhoneNumber:
+          maxLength: 255
+          type: string
+          nullable: true
+        uid:
+          type: string
+          pattern: 'ATU\d{8}'
+          nullable: true
+    CommunityVisibilityRequest:
+      required:
+        - isPublicFindable
+        - isOpenToJoin
+      type: object
+      properties:
+        description:
+          type: string
+          nullable: true
+        isPublicFindable:
+          type: boolean
+        isOpenToJoin:
+          type: boolean
+    CommunityNotificationSettingsRequest:
+      required:
+        - isMemberNotificationsEnabled
+        - isManagerNotificationsEnabled
+      type: object
+      properties:
+        isMemberNotificationsEnabled:
+          type: boolean
+        isManagerNotificationsEnabled:
+          type: boolean
+        managerNotificationsEmail:
+          type: string
+          format: email
+          nullable: true
+          maxLength: 255
+    CommunityResponse:
+      required:
+        - communityAddress
+        - communityName
+        - customerId
+        - energyCommunityId
+        - id
+        - legalEntityNumber
+        - managerEmail
+        - managerName
+        - managerPhoneNumber
+        - marketParticipationNumber
+        - sharingConcept
+        - status
+        - taxable
+        - type
+        - uid
+        - isPublicFindable
+        - isOpenToJoin
+      type: object
+      properties:
+        id:
+          type: string
+        marketParticipationNumber:
+          type: string
+        energyCommunityId:
+          type: string
+        customerId:
+          type: string
+        status:
+          $ref: '#/components/schemas/CommunityStatus'
+        communityName:
+          type: string
+        legalEntityNumber:
+          type: string
+        type:
+          $ref: '#/components/schemas/CommunityType'
+        communityAddress:
+          $ref: '#/components/schemas/CommunityAddressResponse'
+        taxable:
+          type: boolean
+        uid:
+          type: string
+        managerName:
+          type: string
+        managerEmail:
+          type: string
+        managerPhoneNumber:
+          type: string
+        sharingConcept:
+          $ref: '#/components/schemas/SharingConcept'
+        communityPaymentDetails:
+          $ref: '#/components/schemas/CommunityPaymentDetailsResponse'
+        partner:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        isPublicFindable:
+          type: boolean
+          default: false
+        isOpenToJoin:
+          type: boolean
+          default: false
+        isMemberNotificationsEnabled:
+          type: boolean
+          default: true
+        isManagerNotificationsEnabled:
+          type: boolean
+          default: true
+        managerNotificationsEmail:
+          type: string
+          nullable: true
+        tariffProducer:
+          type: number
+        tariffConsumer:
+          type: number
+        membershipFee:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/CommunityMembershipFeeResponse'
+    CommunitySearchResponse:
+      required:
+        - page
+        - pageSize
+        - result
+        - totalCount
+        - totalPages
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int64
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommunitySearchResult'
+    CommunitySearchResult:
+      required:
+        - createdAt
+        - customerId
+        - id
+        - managerName
+        - marketParticipationNumber
+        - name
+        - status
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+        customerId:
+          type: string
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/CommunityType'
+        status:
+          $ref: '#/components/schemas/CommunityStatus'
+        managerName:
+          type: string
+        managerEmail:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        marketParticipationNumber:
+          type: string
+        partner:
+          type: string
+          nullable: true
+    CommunityStatus:
+      type: string
+      enum:
+        - ACTIVATION
+        - PRODUCTION
+        - DEACTIVATED
+    CommunityType:
+      type: string
+      enum:
+        - EEG_LOCAL
+        - EEG_REGIONAL
+        - BEG
+        - GEA
+    EcParticipantRequest:
+      required:
+        - communityId
+        - fullName
+      type: object
+      properties:
+        email:
+          type: string
+        fullName:
+          type: string
+        phoneNumber:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        customerNumber:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        communityId:
+          type: string
+    GridOperatorResponse:
+      required:
+        - gridOperatorId
+        - company
+      type: object
+      properties:
+        gridOperatorId:
+          type: string
+        company:
+          type: string
+        contactEmail:
+          type: string
+        gridPortalUrl:
+          type: string
+    MeteringPointAssignmentAddressReponse:
+      required:
+        - city
+        - contactEmail
+        - contactName
+        - id
+        - postalCode
+        - streetHouseNumber
+      type: object
+      properties:
+        id:
+          type: string
+        streetHouseNumber:
+          type: string
+        addressAdditions:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+        contactName:
+          type: string
+        contactEmail:
+          type: string
+        vatId:
+          type: string
+          nullable: true
+    InviteLinkStatus:
+      type: string
+      enum:
+        - ACTIVE
+        - REVOKED
+    InviteLinkResponse:
+      type: object
+      required:
+        - status
+        - link
+        - createdAt
+      properties:
+        status:
+          $ref: '#/components/schemas/InviteLinkStatus'
+        link:
+          type: string
+          example: /inv/developer-demo-eeg2_nV9x2KpQ7sLw4cZ0mY8aTbQ
+        createdAt:
+          type: string
+          format: date-time
+        revokedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    MeteringPointAssignmentAddressRequest:
+      required:
+        - addressId
+      type: object
+      properties:
+        addressId:
+          type: string
+    MeteringPointAssignmentEnergyTariffRequest:
+      required:
+        - currentEnergyTariff
+      type: object
+      properties:
+        currentEnergyTariff:
+          type: number
+    MeteringPointMembershipFeeRequest:
+      required:
+        - price
+        - type
+      type: object
+      properties:
+        price:
+          type: number
+        type:
+          $ref: '#/components/schemas/MembershipFeeType'
+        description:
+          type: string
+          nullable: true
+    MeteringPointMembershipFeeResponse:
+      required:
+        - price
+        - type
+        - isCharged
+      type: object
+      properties:
+        price:
+          type: number
+        type:
+          $ref: '#/components/schemas/MembershipFeeType'
+        description:
+          type: string
+          nullable: true
+        isCharged:
+          type: boolean
+          default: false
+        chargedAt:
+          type: string
+          format: date
+          nullable: true
+    MeteringPointAssignmentsRequest:
+      required:
+        - addressId
+        - currentEnergyTariff
+        - currentTaxRate
+        - gridOperatorId
+        - number
+        - fromDate
+      type: object
+      properties:
+        additionalInformation:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        number:
+          type: string
+        currentTaxRate:
+          $ref: '#/components/schemas/TaxRate'
+        addressId:
+          type: string
+        currentEnergyTariff:
+          type: number
+        meteringPointType:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MeteringPointType'
+        paymentDetails:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/PaymentDetailsRequest'
+        gridOperatorId:
+          type: string
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+    MeteringPointAssignmentsResponse:
+      required:
+        - address
+        - currentEnergyTariff
+        - currentTaxRate
+        - gridOperatorResponse
+        - id
+        - meteringPointType
+        - number
+        - orderId
+        - fromDate
+      type: object
+      properties:
+        id:
+          type: string
+        additionalInformation:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        number:
+          type: string
+        currentTaxRate:
+          $ref: '#/components/schemas/TaxRate'
+        address:
+          $ref: '#/components/schemas/ParticipantAddressResponse'
+        currentEnergyTariff:
+          type: number
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointType'
+        paymentDetails:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/PaymentDetailsResponse'
+        gridOperatorResponse:
+          $ref: '#/components/schemas/GridOperatorResponse'
+        orderId:
+          type: integer
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+        membershipFee:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MeteringPointMembershipFeeResponse'
+    MeteringPointAssignmentSearchResult:
+      required:
+        - contactName
+        - currentStatus
+        - meteringPointType
+        - number
+        - participantId
+        - statusUpdatedAt
+        - orderId
+      type: object
+      properties:
+        number:
+          type: string
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointType'
+        contactName:
+          type: string
+        communityName:
+          type: string
+          nullable: true
+        participantId:
+          type: string
+        orderId:
+          type: integer
+    MeteringPointAssignmentTaxRateRequest:
+      required:
+        - taxRate
+      type: object
+      properties:
+        taxRate:
+          $ref: '#/components/schemas/TaxRate'
+    MeteringPointAssignmentAdditionalInformationRequest:
+      required:
+        - additionalInformation
+      type: object
+      properties:
+        additionalInformation:
+          type: string
+          maxLength: 255
+          nullable: true
+    MeteringPointAssignmentRequest:
+      required:
+        - fromDate
+      type: object
+      properties:
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+    MeteringPointType:
+      type: string
+      enum:
+        - CONSUMPTION
+        - PRODUCTION
+    MembershipFeeType:
+      type: string
+      enum:
+        - ONE_TIME
+        - RECURRING
+    ParticipantAddressRequest:
+      required:
+        - city
+        - contactEmail
+        - contactName
+        - postalCode
+        - streetHouseNumber
+      type: object
+      properties:
+        streetHouseNumber:
+          minLength: 1
+          type: string
+        addressAdditions:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        postalCode:
+          minLength: 1
+          type: string
+        city:
+          minLength: 1
+          type: string
+        contactName:
+          type: string
+        contactEmail:
+          minLength: 1
+          type: string
+        vatId:
+          type: string
+          nullable: true
+    ParticipantAddressResponse:
+      required:
+        - city
+        - contactEmail
+        - contactName
+        - id
+        - postalCode
+        - streetHouseNumber
+      type: object
+      properties:
+        id:
+          type: string
+        streetHouseNumber:
+          type: string
+        addressAdditions:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+        contactName:
+          minLength: 1
+          type: string
+        contactEmail:
+          minLength: 1
+          type: string
+        vatId:
+          type: string
+          nullable: true
+    PartnerRequest:
+      required:
+        - partner
+      type: object
+      properties:
+        partner:
+          type: string
+          maxLength: 255
+          nullable: true
+    PartnerResponse:
+      required:
+        - partner
+        - communitiesCount
+      type: object
+      properties:
+        partner:
+          type: string
+        communitiesCount:
+          type: integer
+          format: int64
+    PaymentDetailsRequest:
+      required:
+        - accountOwnerName
+        - iban
+      type: object
+      properties:
+        accountOwnerName:
+          minLength: 1
+          type: string
+        iban:
+          type: string
+        bic:
+          required:
+            - "false"
+          type: string
+          nullable: true
+    PaymentDetailsResponse:
+      required:
+        - accountOwnerName
+        - iban
+      type: object
+      properties:
+        accountOwnerName:
+          minLength: 1
+          type: string
+        iban:
+          type: string
+        bic:
+          required:
+            - "false"
+          type: string
+          nullable: true
+    ProfileMeteringPointAssignmentsResponse:
+      required:
+        - address
+        - currentEnergyTariff
+        - currentTaxRate
+        - gridOperator
+        - id
+        - meteringPointType
+        - number
+        - orderId
+        - fromDate
+      type: object
+      properties:
+        id:
+          type: string
+        additionalInformation:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        number:
+          type: string
+        currentTaxRate:
+          $ref: '#/components/schemas/TaxRate'
+        address:
+          $ref: '#/components/schemas/ParticipantAddressResponse'
+        currentEnergyTariff:
+          type: number
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointType'
+        paymentDetails:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/PaymentDetailsResponse'
+        gridOperator:
+          $ref: '#/components/schemas/GridOperatorResponse'
+        orderId:
+          type: integer
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+        membershipFee:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MeteringPointMembershipFeeResponse'
+    ProfileParticipantResponse:
+      required:
+        - communityProfile
+        - fullName
+        - id
+        - managedMeteringPointAssignments
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+        phoneNumber:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        customerNumber:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        managedMeteringPointAssignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProfileMeteringPointAssignmentsResponse'
+        communityProfile:
+          $ref: '#/components/schemas/CommunityProfileResponse'
+    ProfileResponse:
+      required:
+        - fullName
+        - email
+        - managedMeteringPointAssignments
+        - accountId
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+        phoneNumber:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        customerNumber:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        managedMeteringPointAssignments:
+          type: array
+          nullable: false
+          items:
+            $ref: '#/components/schemas/ProfileMeteringPointAssignmentsResponse'
+        accountId:
+          type: string
+          format: uuid
+          nullable: true
+    PublicCommunityInfoResponse:
+      required:
+        - id
+        - name
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/CommunityType'
+        postalCode:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        tariffProducer:
+          type: number
+          nullable: true
+        tariffConsumer:
+          type: number
+          nullable: true
+        membershipFee:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/CommunityMembershipFeeResponse'
+    SharingConcept:
+      type: string
+      enum:
+        - DYNAMIC
+        - STATIC
+    TaxRate:
+      type: string
+      enum:
+        - NONE
+        - TAXABLE
+        - FARMER_TAXABLE
+    WaMeteringPointAssignmentResponse:
+      required:
+        - currentEnergyTariff
+        - currentTaxRate
+        - gridOperator
+        - id
+        - meteringPointAssignmentStatus
+        - meteringPointType
+        - number
+        - statusUpdatedAt
+        - orderId
+        - fromDate
+      type: object
+      properties:
+        id:
+          type: string
+        additionalInformation:
+          type: string
+          nullable: true
+        number:
+          type: string
+        currentTaxRate:
+          $ref: '#/components/schemas/TaxRate'
+        address:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MeteringPointAssignmentAddressReponse'
+        currentEnergyTariff:
+          type: number
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointType'
+        paymentDetails:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/PaymentDetailsResponse'
+        gridOperator:
+          $ref: '#/components/schemas/GridOperatorResponse'
+        orderId:
+          type: integer
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+        membershipFee:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MeteringPointMembershipFeeResponse'
+    WaParticipantRequest:
+      required:
+        - communityId
+        - fullName
+      type: object
+      properties:
+        email:
+          type: string
+        fullName:
+          type: string
+        phoneNumber:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        customerNumber:
+          required:
+            - "false"
+          type: string
+          nullable: true
+        communityId:
+          type: string
+    WaParticipantResponse:
+      required:
+        - fullName
+        - id
+        - accountId
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+        phoneNumber:
+          type: string
+          nullable: true
+        customerNumber:
+          type: string
+          nullable: true
+        accountId:
+          type: string
+          format: uuid
+          nullable: true
+        energyData:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/WaMeteringPointAssignmentResponse'
+    CommunityDetailsResponse:
+      type: object
+      required:
+        - id
+        - marketNumber
+        - name
+        - isTaxable
+        - contactAddress
+        - managerName
+        - managerEmail
+        - managerPhoneNumber
+        - participantDetailsResponse
+      properties:
+        id:
+          type: string
+          format: uuid
+        marketNumber:
+          type: string
+        legalEntityNumber:
+          type: string
+          nullable: true
+        name:
+          type: string
+        isTaxable:
+          type: boolean
+        uid:
+          type: string
+          nullable: true
+        contactAddress:
+          $ref: '#/components/schemas/CommunityAddressResponse'
+        managerName:
+          type: string
+        managerEmail:
+          type: string
+          format: email
+        managerPhoneNumber:
+          type: string
+        customerId:
+          type: string
+        participantDetailsResponse:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParticipantDetailsResponse'
+        communityPaymentDetails:
+          $ref: '#/components/schemas/CommunityPaymentDetailsResponse'
+    ParticipantDetailsResponse:
+      type: object
+      required:
+        - id
+        - meteringPointAssignments
+      properties:
+        id:
+          type: string
+          format: uuid
+        customerNumber:
+          type: string
+          nullable: true
+        meteringPointAssignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeteringPointAssignmentDetailsResponse'
+    MeteringPointAssignmentDetailsResponse:
+      type: object
+      required:
+        - id
+        - number
+        - meteringPointType
+        - taxRate
+        - currentEnergyTariff
+        - orderId
+        - meteringPointAssignmentAddressResponse
+      properties:
+        id:
+          type: string
+        number:
+          type: string
+        meteringPointType:
+          $ref: '#/components/schemas/MeteringPointType'
+        vatType:
+          $ref: '#/components/schemas/TaxRate'
+        currentEnergyTariff:
+          type: number
+          format: decimal
+        orderId:
+          type: string
+        meteringPointAssignmentAddressReponse:
+          $ref: '#/components/schemas/MeteringPointAssignmentAddressReponse'
+        paymentDetails:
+          $ref: '#/components/schemas/PaymentDetailsResponse'
+          nullable: true
+        paymentOptions:
+          $ref: '#/components/schemas/MeteringPointAssignmentPaymentOption'
+          nullable: true
+        customerNumber:
+          type: string
+          nullable: true
+        additionalInformation:
+          type: string
+          nullable: true
+        membershipFee:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/MeteringPointMembershipFeeResponse'
+    Problem:
+      type: object
+      description: RFC 7807 problem details
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference that identifies the problem type.
+        title:
+          type: string
+          description: Short, human-readable summary of the problem type.
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code generated by the origin server for this occurrence of the problem.
+        detail:
+          type: string
+          description: Human-readable explanation specific to this occurrence of the problem.
+        instance:
+          type: string
+          format: uri
+          description: A URI reference that identifies the specific occurrence of the problem.
+      additionalProperties: true
+    MeteringPointNumberUniqueProblem:
+      allOf:
+        - $ref: '#/components/schemas/Problem'
+        - type: object
+          required:
+            - code
+            - conflictingNumber
+            - participantId
+            - participantName
+            - conflictType
+            - currentFromDate
+            - requestedFromDate
+          properties:
+            code:
+              type: string
+              enum: [ METERING_POINT_NUMBER_CONFLICT ]
+              description: Machine-readable error code.
+            conflictingNumber:
+              type: string
+              description: The metering point number that caused the conflict.
+            participantId:
+              type: string
+              format: uuid
+              description: ID of the participant that currently owns the conflicting assignment.
+            participantName:
+              type: string
+              description: Display name of that participant.
+            conflictType:
+              type: string
+              enum: [ OVERLAPPING_TIME_RANGE ]
+              description: Type of conflict.
+            currentFromDate:
+              type: string
+              format: date
+              description: Start of the current assignment period.
+            currentToDate:
+              description: Inclusive end of the current assignment period; omitted/null/∞ means open-ended.
+              nullable: true
+              oneOf:
+                - type: string
+                  format: date
+                - type: string
+                  enum: ["∞"]
+            requestedFromDate:
+              type: string
+              format: date
+              description: Start of the requested assignment period.
+            requestedToDate:
+              description: Inclusive end of the requested assignment period; omitted/null/∞ means open-ended.
+              nullable: true
+              oneOf:
+                - type: string
+                  format: date
+                - type: string
+                  enum: ["∞"]
+    CommunityPaymentDetailsResponse:
+      required:
+        - accountOwnerName
+        - communityId
+        - iban
+      type: object
+      properties:
+        communityId:
+          type: string
+          format: uuid
+        accountOwnerName:
+          type: string
+        iban:
+          type: string
+        bic:
+          type: string
+          nullable: true
+        creditorId:
+          type: string
+          nullable: true
+    CommunityPaymentDetailsRequest:
+      required:
+        - accountOwnerName
+        - iban
+      type: object
+      properties:
+        accountOwnerName:
+          type: string
+        iban:
+          type: string
+        bic:
+          type: string
+          nullable: true
+        creditorId:
+          type: string
+          nullable: true
+    ParticipantPaymentOptionsResponse:
+      required:
+        - participantId
+        - paymentOptions
+      type: object
+      properties:
+        participantId:
+          type: string
+          format: uuid
+        paymentOptions:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/PaymentOptionResponse'
+    PaymentOptionRequest:
+      required:
+        - type
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/PaymentOptionType'
+        iban:
+          type: string
+          nullable: true
+        accountOwnerName:
+          type: string
+          nullable: true
+        mandateIssueDate:
+          type: string
+          format: date
+          nullable: true
+        mandateReference:
+          type: string
+          nullable: true
+    MeteringPointAssignmentPaymentOption:
+      required:
+        - id
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/PaymentOptionType'
+        iban:
+          type: string
+          nullable: true
+        accountOwnerName:
+          type: string
+          nullable: true
+        mandateIssueDate:
+          type: string
+          format: date
+          nullable: true
+        mandateReference:
+          type: string
+          nullable: true
+    PaymentOptionResponse:
+      required:
+        - associatedMeteringPoints
+        - id
+        - type
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          $ref: '#/components/schemas/PaymentOptionType'
+        iban:
+          type: string
+          nullable: true
+        accountOwnerName:
+          type: string
+          nullable: true
+        mandateIssueDate:
+          type: string
+          format: date
+          nullable: true
+        mandateReference:
+          type: string
+          nullable: true
+        associatedMeteringPoints:
+          type: array
+          items:
+            type: string
+            format: uuid
+    PaymentOptionType:
+      type: string
+      enum:
+        - SEPA_DIRECT_DEBIT
+        - SELF_PAYMENT
+        - NOT_SPECIFIED
+    SelectPaymentOptionRequest:
+      required:
+        - paymentOptionId
+      type: object
+      properties:
+        paymentOptionId:
+          type: string
+          format: uuid
+    SelectPaymentOptionResponse:
+      required:
+        - meteringPointId
+        - paymentOptionId
+      type: object
+      properties:
+        meteringPointId:
+          type: string
+          format: uuid
+        paymentOptionId:
+          type: string
+          format: uuid
+    CommunityPaymentOptionsResponse:
+      required:
+        - communityId
+        - paymentOptions
+      type: object
+      properties:
+        communityId:
+          type: string
+          format: uuid
+        paymentOptions:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/ParticipantPaymentOptionsResponse'
+    EcmsCommunityMembersSearchResponse:
+      required:
+        - page
+        - pageSize
+        - result
+        - totalCount
+        - totalPages
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalPages:
+          type: integer
+          format: int32
+        totalCount:
+          type: integer
+          format: int64
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcmsCommunityMemberResult'
+    EcmsCommunityMemberResult:
+      required:
+        - id
+        - fullName
+        - meteringPoints
+        - community
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        fullName:
+          type: string
+        email:
+          type: string
+          nullable: true
+        meteringPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/EcmsCommunityMemberMeteringPoint'
+        community:
+          $ref: '#/components/schemas/EcmsCommunityMemberCommunity'
+    EcmsCommunityMemberMeteringPoint:
+      required:
+        - id
+        - number
+        - fromDate
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        number:
+          type: string
+        fromDate:
+          type: string
+          format: date
+        toDate:
+          type: string
+          format: date
+          nullable: true
+        address:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/EcmsCommunityMemberMeteringPointAddress'
+    EcmsCommunityMemberMeteringPointAddress:
+      required:
+        - id
+        - streetHouseNumber
+        - postalCode
+        - city
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        streetHouseNumber:
+          type: string
+        addressAdditions:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+        city:
+          type: string
+    EcmsCommunityMemberCommunity:
+      required:
+        - id
+        - communityName
+        - marketParticipationNumber
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        communityName:
+          type: string
+        marketParticipationNumber:
+          type: string
+        energyCommunityId:
+          type: string
+          nullable: true
+        customerId:
+          type: string
+          nullable: true
+        legalEntityNumber:
+          type: string
+          nullable: true
+        uid:
+          type: string
+          nullable: true
+        partner:
+          type: string
+          nullable: true
+    GridOperatorRequest:
+      type: object
+      properties:
+        contactEmail:
+          type: string
+        gridPortalUrl:
+          type: string
+    CommunityTariffRequest:
+      type: object
+      properties:
+        tariffProducer:
+          type: number
+          nullable: true
+        tariffConsumer:
+          type: number
+          nullable: true
+    CommunityTariffResponse:
+      type: object
+      required:
+        - communityId
+      properties:
+        communityId:
+          type: string
+        tariffProducer:
+          type: number
+          nullable: true
+        tariffConsumer:
+          type: number
+          nullable: true
+    CommunityMembershipFeeRequest:
+      required:
+        - price
+        - type
+      type: object
+      properties:
+        price:
+          type: number
+        type:
+          $ref: '#/components/schemas/MembershipFeeType'
+        description:
+          type: string
+          nullable: true
+    CommunityMembershipFeeResponse:
+      required:
+        - price
+        - type
+      type: object
+      properties:
+        price:
+          type: number
+        type:
+          $ref: '#/components/schemas/MembershipFeeType'
+        description:
+          type: string
+          nullable: true

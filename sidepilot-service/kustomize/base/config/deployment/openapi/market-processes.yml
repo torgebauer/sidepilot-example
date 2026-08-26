@@ -1,0 +1,1687 @@
+openapi: 3.0.1
+info:
+    title: Market Processes Service
+    description: This is a backend service for integration with the market processes.
+    contact:
+        name: "Salzburg AG für Energie, Verkehr und Telekommunikation"
+        url: https://github.com/salzburg-ag
+        email: kundenservice@salzburg-ag.at
+    version: 1.0.0
+tags:
+    - name: GetAndRefreshProcesses
+    - name: EnergyDataProcesses
+    - name: MeteringPointManagement
+    - name: EnergyCommunityManagement
+    - name: Onboarding
+paths:
+    /api/communities/{communityId}/processes:
+        get:
+            summary: Get all market processes for an energy community
+            operationId: getMarketProcesses
+            tags:
+                - GetAndRefreshProcesses
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Market processes for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessStatusResponse"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: User is not in ACTIVE status
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/processes/{marketProcessId}:
+        get:
+            summary: Get a market process for an energy community
+            operationId: getMarketProcess
+            tags:
+                - GetAndRefreshProcesses
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: marketProcessId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MarketProcessId"
+            responses:
+                "200":
+                    description: Market processes for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessStatus"
+                "404":
+                    description: Market process not (yet) found
+                "403":
+                    description: User is not in ACTIVE status
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/processes/{marketProcessId}/dismiss:
+        post:
+            summary: Dismiss the error result of the market-process
+            operationId: dismissMarketProcesses
+            tags:
+                - GetAndRefreshProcesses
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: marketProcessId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MarketProcessId"
+            responses:
+                "200":
+                    description: Market Process Result was dismissed
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessStatus"
+                "205":
+                    description: Market Process Result was already dismissed before
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessStatus"
+                "400":
+                    description: Invalid request
+                "404":
+                    description: No market process id or energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/processes/{marketProcessId}/refresh:
+        post:
+            summary: Trigger the refresh of a market process for an energy community
+            operationId: refreshMarketProcesses
+            tags:
+                - GetAndRefreshProcesses
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: marketProcessId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MarketProcessId"
+            responses:
+                "201":
+                    description: Refresh of the market process being triggered
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTrigger"
+                "400":
+                    description: Invalid request
+                "404":
+                    description: No market process id or energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/energy:
+        post:
+            summary: Trigger requests for energy data for an energy community
+            operationId: requestEnergyDataForEnergyCommunity
+            tags:
+                - EnergyDataProcesses
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/EnergyDataRequestBody"
+            responses:
+                "201":
+                    description: requested market process id
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/CommunityEnergyDataResponse"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: User is not in ACTIVE status
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/energy-request/eligibility:
+        get:
+            summary: Check eligibility to create a new energy request
+            description: Checks if a new energy data request process can be initiated.
+            operationId: checkIfEligibleToRequestEnergyData
+            tags:
+                - EnergyDataProcesses
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Eligibility check performed successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/EnergyRequestEligibility"
+                "400":
+                    description: Invalid community ID format
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: User does not have permission to view this community
+    /api/communities/{communityId}/{meteringPointId}/energy:
+        post:
+            summary: Trigger request for energy data for one metering point
+            operationId: requestEnergyDataForMeteringPoint
+            tags:
+                - EnergyDataProcesses
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: meteringPointId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MeteringPointId"
+            requestBody:
+                description: ""
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/EnergyDataRequestBody"
+            responses:
+                "201":
+                    description: Requested metering points
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTriggers"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: User is not in ACTIVE status
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/metering-point-number/{meteringPointNumber}/energy:
+        post:
+            summary: Trigger request for energy data for one metering point by metering point number
+            operationId: requestEnergyDataForMeteringPointNumber
+            tags:
+                - EnergyDataProcesses
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: meteringPointNumber
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MeteringPointNumber"
+            requestBody:
+                description: ""
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/EnergyDataRequestBody"
+            responses:
+                "201":
+                    description: Requested metering points
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTriggers"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: User is not in ACTIVE status
+                "401":
+                    description: User is not authenticated
+    /api/m2m/communities/{communityId}/{meteringPointId}/energy:
+        post:
+            summary: Trigger request for energy data for one metering point
+            operationId: requestEnergyDataForMeteringPointM2M
+            tags:
+                - EnergyDataProcessesM2m
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: meteringPointId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MeteringPointId"
+            requestBody:
+                description: ""
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/EnergyDataRequestBody"
+            responses:
+                "201":
+                    description: Requested metering points
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTriggers"
+                "400":
+                    description: Invalid request
+                "401":
+                    description: Unauthorized - Invalid or missing API key
+    /api/m2m/communities/{communityId}/metering-point-number/{meteringPointNumber}/energy:
+        post:
+            summary: Trigger request for energy data for one metering point by metering point number
+            operationId: requestEnergyDataForMeteringPointNumberM2M
+            tags:
+                - EnergyDataProcessesM2m
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: meteringPointNumber
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MeteringPointNumber"
+            requestBody:
+                description: ""
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/EnergyDataRequestBody"
+            responses:
+                "201":
+                    description: Requested metering points
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTriggers"
+                "400":
+                    description: Invalid request
+                "401":
+                    description: Unauthorized - Invalid or missing API key
+                "409":
+                    description: An active energy data request already exists for this period
+    /api/communities/{communityId}/{meteringPointId}:
+        post:
+            summary: Trigger request to register new metering point
+            operationId: registerNewMeteringPoint
+            tags:
+                - MeteringPointManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: meteringPointId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MeteringPointId"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/RegisterMeteringPointRequestBody"
+            responses:
+                "201":
+                    description: The requested market process id
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTrigger"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: User is not authorised
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/metering-points:
+        get:
+            summary: Get all metering points for an energy community
+            operationId: getMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Metering points for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/GetMeteringPointsResponse"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/unassigned-metering-points:
+        get:
+            summary: Get unassigned metering points for an energy community
+            operationId: getUnassignedMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Unassigned Metering points for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/UnassignedMeteringPoint"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/assigned-metering-points:
+        get:
+            summary: Get Assigned metering points for an energy community
+            operationId: getAssignedMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Assigned Metering points for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: "#/components/schemas/AssignedMeteringPoint"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/assigned-unassigned-metering-points:
+        get:
+            summary: Get Assigned & Unassigned metering points for an energy community
+            operationId: getAssignedAndUnassignedMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Assigned and Unassinged Metering points for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MeteringPointAssignmentsResponse"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/metering-points/{meteringPointId}:
+        get:
+            summary: Get specific metering point for an energy community
+            operationId: getMeteringPoint
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: meteringPointId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MeteringPointId"
+            responses:
+                "200":
+                    description: Metering point for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MeteringPoint"
+                "400":
+                    description: Invalid request
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No metering point or energy community found
+    /api/communities/{communityId}/participants/{participantId}/metering-points:
+        get:
+            summary: Get all metering points for a participant in an energy community
+            operationId: getParticipantMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: participantId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/ParticipantId"
+            responses:
+                "200":
+                    description: Metering points for a participant in an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/GetMeteringPointsResponse"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community or participant found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/metering-points/activation-periods:
+        get:
+            summary: Get metering point activation periods for an energy community
+            operationId: getMeteringPointsActivationPeriods
+            tags:
+                - MeteringPointActivationPeriod
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Metering point activation periods for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MeteringPointActivationsResponse"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/metering-point-assignments/activation-periods:
+        get:
+            summary: Get assigned and unassigned metering point assignment activation periods for an energy community
+            operationId: getMeteringPointAssignmentActivationPeriods
+            tags:
+                - MeteringPointActivationPeriod
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Assigned and Unassigned Metering point activation periods for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MeteringPointAssignmentActivationsResponse"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/metering-point-assignment/activation-periods:
+        get:
+            summary: Get assigned and unassigned metering point assignment activation periods for a metering point
+            operationId: getMeteringPointAssignmentActivationPeriod
+            tags:
+                - MeteringPointActivationPeriod
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: meteringPointNumber
+                  in: query
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MeteringPointNumber"
+            responses:
+                "200":
+                    description: Assigned and Unassigned Metering point activation periods for an energy community
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MeteringPointActivationResponse"
+                "400":
+                    description: Invalid request
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/configuration:
+        post:
+            summary: Request podlist
+            operationId: requestPodList
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ConfigurationRequestBody"
+            responses:
+                "201":
+                    description: podlist requested
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTriggers"
+                "400":
+                    description: Invalid request
+                "404":
+                    description: No market process id or energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/metering-points/participation-factor:
+        post:
+            summary: Trigger the update of the participation factor for selected metering points of an energy community
+            operationId: changeParticipationFactorMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ParticipationFactorRequestBody"
+            responses:
+                "201":
+                    description: Metering points participation factor updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MeteringPointsProcessResponse"
+                "400":
+                    description: Invalid request
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+    /api/communities/{communityId}/metering-points/share-factor:
+        post:
+            summary: Trigger the update of the share factor for selected metering points of an energy community
+            operationId: updateShareFactorMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/ShareFactorRequestBody"
+            responses:
+                "201":
+                    description: Metering points share factor updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MeteringPointsProcessResponse"
+                "400":
+                    description: Invalid request
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No energy community found
+    /api/communities/{communityId}/metering-points/register:
+        post:
+            summary: Register selected metering points of an energy community
+            operationId: RegisterMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/RegisterMeteringPointsBody"
+            responses:
+                "201":
+                    description: Metering points Registered
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTriggers"
+                "400":
+                    description: Invalid request
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No market process id or energy community found
+    /api/communities/{communityId}/metering-points/deactivate:
+        post:
+            summary: Deactivate selected metering points of an energy community
+            operationId: deactivateMeteringPoints
+            tags:
+                - EnergyCommunityManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/DeactivateMeteringPointsBody"
+            responses:
+                "201":
+                    description: Metering points deactivated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MeteringPointsProcessResponse"
+                "400":
+                    description: Invalid request
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No market process id or energy community found
+    /api/communities/{communityId}/{meteringPointId}/deactivate:
+        post:
+            summary: Deactivate metering point
+            operationId: deactivateMeteringPoint
+            tags:
+                - MeteringPointManagement
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+                - name: meteringPointId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/MeteringPointId"
+            requestBody:
+                required: false
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/DeactivateMeteringPointRequestBody"
+            responses:
+                "201":
+                    description: Metering points deactivated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/MarketProcessTrigger"
+                "400":
+                    description: Invalid request
+                "404":
+                    description: No market process id or energy community found
+                "401":
+                    description: User is not authenticated
+    /api/communities/{communityId}/activation:
+        get:
+            summary: Get community onboarding activation state
+            description: Returns the locally cached community activation/onboarding state synced from the EDA onboarding API. Returns 404 if the community has not yet been synced.
+            operationId: getCommunityActivation
+            tags:
+                - Onboarding
+            parameters:
+                - name: communityId
+                  in: path
+                  required: true
+                  schema:
+                      $ref: "#/components/schemas/CommunityId"
+            responses:
+                "200":
+                    description: Community activation record
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/CommunityActivation"
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: Not authorised
+                "404":
+                    description: No activation record for this community
+    /api/onboarding:
+        post:
+            summary: Start a new partner onboarding
+            operationId: startOnboarding
+            tags:
+                - Onboarding
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/StartOnboardingRequest"
+            responses:
+                "200":
+                    description: Onboarding process started successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/OnboardingStatus"
+                "400":
+                    description: Invalid request
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: Not authorised
+                "409":
+                    description: Onboarding already in progress or completed
+    /api/onboarding/{backendId}/status:
+        get:
+            summary: Get onboarding status
+            operationId: getOnboardingStatus
+            tags:
+                - Onboarding
+            parameters:
+                - name: backendId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                "200":
+                    description: Onboarding status
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/OnboardingStatus"
+                "401":
+                    description: User is not authenticated
+                "403":
+                    description: Not authorised
+                "404":
+                    description: Onboarding not found
+components:
+    schemas:
+        CommunityId:
+            type: string
+            format: uuid
+        ParticipantId:
+            type: string
+            format: uuid
+        MeteringPointStatus:
+            type: string
+            enum:
+                - ACTIVE
+                - NOT_ACTIVE
+                - REQUESTED
+                - ACCEPTED
+                - REJECTED
+                - ARCHIVED
+                - SCHEDULED
+        MarketProcessStatus:
+            required:
+                - id
+                - responses
+                - lastUpdateOn
+                - marketProcessType
+                - messageIds
+                - startedOn
+                - requestParameters
+            type: object
+            properties:
+                id:
+                    $ref: "#/components/schemas/MarketProcessId"
+                startedOn:
+                    type: string
+                    format: date-time
+                lastUpdateOn:
+                    type: string
+                    format: date-time
+                completedOn:
+                    type: string
+                    format: date-time
+                    nullable: true
+                terminatedOn:
+                    type: string
+                    format: date
+                    nullable: true
+                requestParameters:
+                    type: object
+                result:
+                    type: object
+                meteringPointNumber:
+                    $ref: "#/components/schemas/MeteringPointNumber"
+                marketProcessType:
+                    $ref: "#/components/schemas/MarketProcessType"
+                responses:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/MarketProcessState"
+                messageIds:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/MessageId"
+                integrationErrors:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/IntegrationError"
+                shouldBeRefreshed:
+                    type: boolean
+                dismissed:
+                    type: boolean
+        MarketProcessStatusResponse:
+            required:
+                - page
+                - pageSize
+                - result
+                - totalCount
+                - totalPages
+            type: object
+            properties:
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+                totalPages:
+                    type: integer
+                    format: int32
+                totalCount:
+                    type: integer
+                    format: int64
+                result:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/MarketProcessStatus"
+        EnergyDataRequestBody:
+            type: object
+            required:
+                - startingDate
+                - endDate
+            properties:
+                startingDate:
+                    type: string
+                    format: date
+                endDate:
+                    type: string
+                    format: date
+                gridOperatorId:
+                    type: string
+        RegisterMeteringPointRequestBody:
+            type: object
+            required:
+                - startingDate
+                - energyDirection
+                - participationFactor
+            properties:
+                startingDate:
+                    type: string
+                    format: date
+                energyDirection:
+                    $ref: "#/components/schemas/MeteringPointType"
+                share:
+                    type: number
+                    format: float
+                participationFactor:
+                    type: integer
+                    format: int32
+        ConfigurationRequestBody:
+            type: object
+            required:
+                - startingDate
+            properties:
+                startingDate:
+                    type: string
+                    format: date
+                    pattern: "yyyy-MM-dd"
+                gridOperatorId:
+                    type: string
+        MarketProcessId:
+            type: string
+            format: uuid
+        MessageId:
+            type: string
+            format: uuid
+        IntegrationError:
+            type: object
+            required:
+                - timestamp
+                - errorType
+            properties:
+                timestamp:
+                    type: string
+                    format: date-time
+                    nullable: false
+                errorType:
+                    type: string
+                    nullable: false
+                    enum:
+                        - MISSING_RESPONSE_FROM_PROCESS_REFRESH
+        UnactionedMeteringPoint:
+            type: object
+            properties:
+                meteringPointId:
+                    type: string
+                meteringPointNumber:
+                    type: string
+                reason:
+                    type: string
+        MarketProcessTrigger:
+            type: object
+            required:
+                - marketProcessId
+                - messageId
+            properties:
+                marketProcessId:
+                    $ref: "#/components/schemas/MarketProcessId"
+                messageId:
+                    $ref: "#/components/schemas/MessageId"
+        UnactionedMeteringPoints:
+            type: array
+            items:
+                $ref: "#/components/schemas/NotRequestedMeteringpoint"
+        MarketProcessTriggers:
+            type: array
+            items:
+                $ref: "#/components/schemas/MarketProcessTrigger"
+        MeteringPointId:
+            type: string
+            format: uuid
+        ActivationId:
+            type: string
+            format: uuid
+        MarketProcessState:
+            required:
+                - code
+                - errorType
+                - message
+            type: object
+            properties:
+                code:
+                    type: string
+                message:
+                    type: string
+                errorType:
+                    type: string
+        MarketProcessType:
+            type: string
+            enum:
+                - EnergyDataRequest
+                - RegisterMeteringPoint
+                - RequestConfiguration
+                - DeactivateMeteringPoint
+                - UpdateShareFactor
+                - ChangeParticipationFactor
+        MeteringPointNumber:
+            type: string
+        MeteringPointType:
+            type: string
+            enum:
+                - CONSUMPTION
+                - PRODUCTION
+        GetMeteringPointsResponse:
+            type: array
+            items:
+                $ref: "#/components/schemas/MeteringPoint"
+        MeteringPoint:
+            required:
+                - number
+                - activationStatus
+                - hasBeenActivated
+            type: object
+            properties:
+                activationId:
+                    $ref: "#/components/schemas/ActivationId"
+                meteringPointId:
+                    $ref: "#/components/schemas/MeteringPointId"
+                number:
+                    $ref: "#/components/schemas/MeteringPointNumber"
+                type:
+                    $ref: "#/components/schemas/MeteringPointType"
+                startDate:
+                    type: string
+                    format: date
+                endDate:
+                    type: string
+                    format: date
+                activationDate:
+                    type: string
+                    format: date
+                deactivationDate:
+                    type: string
+                    format: date
+                share:
+                    type: number
+                    format: float
+                participationFactor:
+                    type: integer
+                    format: int32
+                lastParticipationFactorUpdatedDate:
+                    type: string
+                    format: date
+                gridOperatorId:
+                    type: string
+                marketProcessId:
+                    $ref: "#/components/schemas/MarketProcessId"
+                activationStatus:
+                    $ref: "#/components/schemas/MeteringPointStatus"
+                processStatus:
+                    $ref: "#/components/schemas/MeteringPointStatus"
+                hasBeenActivated:
+                    type: boolean
+                errors:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/Error"
+        MeteringPointAssignmentsResponse:
+            type: object
+            properties:
+                assignedMeteringPoints:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/AssignedMeteringPoint"
+                unassignedMeteringPoints:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/UnassignedMeteringPoint"
+        UnassignedMeteringPoint:
+            required:
+                - number
+                - activationStatus
+            type: object
+            properties:
+                number:
+                    $ref: "#/components/schemas/MeteringPointNumber"
+                type:
+                    $ref: "#/components/schemas/MeteringPointType"
+                activationStatus:
+                    $ref: "#/components/schemas/MeteringPointStatus"
+                processStatus:
+                    $ref: "#/components/schemas/MeteringPointStatus"
+                meteringPointActivations:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/meteringPointActivations"
+        AssignedMeteringPoint:
+            required:
+                - meteringPointId
+                - number
+                - activationStatus
+            type: object
+            properties:
+                meteringPointId:
+                    $ref: "#/components/schemas/MeteringPointId"
+                number:
+                    $ref: "#/components/schemas/MeteringPointNumber"
+                participantId:
+                    $ref: "#/components/schemas/ParticipantId"
+                type:
+                    $ref: "#/components/schemas/MeteringPointType"
+                activationStatus:
+                    $ref: "#/components/schemas/MeteringPointStatus"
+                processStatus:
+                    $ref: "#/components/schemas/MeteringPointStatus"
+                meteringPointActivations:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/meteringPointActivations"
+                processes:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/MeteringPointProcess"
+        MeteringPointProcess:
+            required:
+                - marketProcessType
+                - status
+            type: object
+            properties:
+                marketProcessId:
+                    $ref: "#/components/schemas/MarketProcessId"
+                marketProcessType:
+                    $ref: "#/components/schemas/MarketProcessType"
+                status:
+                    $ref: "#/components/schemas/MeteringPointStatus"
+                startedOn:
+                    type: string
+                    format: date-time
+                completedOn:
+                    type: string
+                    format: date-time
+                    nullable: true
+        meteringPointActivations:
+            required:
+                - activationId
+                - activationDate
+            type: object
+            properties:
+                activationId:
+                    $ref: "#/components/schemas/ActivationId"
+                activationDate:
+                    type: string
+                    format: date
+                deactivationDate:
+                    type: string
+                    format: date
+                startDate:
+                    type: string
+                    format: date
+                endDate:
+                    type: string
+                    format: date
+                status:
+                    $ref: "#/components/schemas/MeteringPointStatus"
+                share:
+                    type: number
+                    format: float
+                participationFactor:
+                    type: integer
+                    format: int32
+                gridOperatorId:
+                    type: string
+        ParticipationFactorRequestBody:
+            type: array
+            items:
+                $ref: "#/components/schemas/ChangeParticipationFactor"
+        ChangeParticipationFactor:
+            type: object
+            required:
+                - meteringPointId
+                - participationFactor
+            properties:
+                meteringPointId:
+                    $ref: "#/components/schemas/MeteringPointId"
+                participationFactor:
+                    type: integer
+                    format: int32
+                gridOperatorId:
+                    type: string
+        ShareFactorRequestBody:
+            type: array
+            items:
+                $ref: "#/components/schemas/ShareFactor"
+        ShareFactor:
+            type: object
+            required:
+                - meteringPointId
+                - startDate
+                - share
+            properties:
+                meteringPointId:
+                    $ref: "#/components/schemas/MeteringPointId"
+                startDate:
+                    type: string
+                    format: date
+                    pattern: "yyyy-MM-dd"
+                share:
+                    type: number
+                    format: float
+                gridOperatorId:
+                    type: string
+        NotRequestedMeteringpoint:
+            type: object
+            properties:
+                meteringPointId:
+                    type: string
+                meteringPointNumber:
+                    type: string
+                reason:
+                    type: string
+        CommunityEnergyDataResponse:
+            type: object
+            properties:
+                marketProcessTriggers:
+                    $ref: "#/components/schemas/MarketProcessTriggers"
+                notRequestedMeteringPoints:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/NotRequestedMeteringpoint"
+        RegisterMeteringPointsBody:
+            type: array
+            items:
+                $ref: "#/components/schemas/RegisterMeteringPoints"
+        RegisterMeteringPoints:
+            required:
+                - meteringPointId
+                - startDate
+                - energyDirection
+                - participationFactor
+            type: object
+            properties:
+                meteringPointId:
+                    $ref: "#/components/schemas/MeteringPointId"
+                startDate:
+                    type: string
+                    format: date
+                    pattern: "yyyy-MM-dd"
+                energyDirection:
+                    $ref: "#/components/schemas/MeteringPointType"
+                share:
+                    type: number
+                    format: float
+                participationFactor:
+                    type: integer
+                    format: int32
+                notifyMember:
+                    type: boolean
+                    default: true
+                notificationEmail:
+                    type: string
+                    format: email
+                    nullable: true
+                communityName:
+                    type: string
+                    nullable: true
+                managerName:
+                    type: string
+                    nullable: true
+                managerEmail:
+                    type: string
+                    nullable: true
+        DeactivateMeteringPointsBody:
+            type: array
+            items:
+                $ref: "#/components/schemas/DeactivateMeteringPoints"
+        DeactivateMeteringPoints:
+            required:
+                - meteringPointId
+                - endDate
+            type: object
+            properties:
+                meteringPointId:
+                    $ref: "#/components/schemas/MeteringPointId"
+                endDate:
+                    type: string
+                    format: date
+                    pattern: "yyyy-MM-dd"
+        DeactivateMeteringPointRequestBody:
+            required:
+                - endDate
+            type: object
+            properties:
+                endDate:
+                    type: string
+                    format: date
+                    pattern: "yyyy-MM-dd"
+        MeteringPointsProcessResponse:
+            type: object
+            properties:
+                marketProcessTriggers:
+                    $ref: "#/components/schemas/MarketProcessTriggers"
+                notRequestedMeteringPoints:
+                    $ref: "#/components/schemas/UnactionedMeteringPoints"
+        MeteringPointActivationsResponse:
+            type: array
+            items:
+                $ref: "#/components/schemas/MeteringPointActivation"
+        MeteringPointActivationResponse:
+            type: object
+            properties:
+                meteringPointActivation:
+                    $ref: "#/components/schemas/BasicMeteringPointActivation"
+        MeteringPointAssignmentActivationsResponse:
+            type: object
+            properties:
+                meteringPointActivation:
+                    $ref: "#/components/schemas/MeteringPointActivations"
+                unassignedMeteringPointActivations:
+                    $ref: "#/components/schemas/UnassignedMeteringPointActivations"
+        MeteringPointActivations:
+            type: array
+            items:
+                $ref: "#/components/schemas/MeteringPointActivation"
+        UnassignedMeteringPointActivations:
+            type: array
+            items:
+                $ref: "#/components/schemas/unassignedMeteringPointActivation"
+        MeteringPointActivation:
+            required:
+                - meteringPointId
+                - number
+            type: object
+            properties:
+                meteringPointId:
+                    $ref: "#/components/schemas/MeteringPointId"
+                number:
+                    $ref: "#/components/schemas/MeteringPointNumber"
+                activations:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/ActivationPeriod"
+        unassignedMeteringPointActivation:
+            required:
+                - number
+            type: object
+            properties:
+                number:
+                    $ref: "#/components/schemas/MeteringPointNumber"
+                activations:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/ActivationPeriod"
+        BasicMeteringPointActivation:
+            required:
+                - number
+            type: object
+            properties:
+                number:
+                    $ref: "#/components/schemas/MeteringPointNumber"
+                activations:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/ActivationPeriod"
+
+        ActivationPeriod:
+            required:
+                - startDate
+            type: object
+            properties:
+                activationId:
+                    $ref: "#/components/schemas/ActivationId"
+                startDate:
+                    type: string
+                    format: date
+                endDate:
+                    type: string
+                    format: date
+                    nullable: true
+        ResponseErrorCategory:
+            type: string
+            enum:
+                - METERING_POINT_NOT_FOUND
+                - METERING_POINT_NOT_ACTIVE
+                - CHANGE_ACCEPTED
+                - INVALID_REQUEST_DATA
+                - INVALID_PROCESS_DATE
+                - COMPETING_PROCESSES
+                - MESSAGE_RECEIVED
+                - INVALID_ENERGY_DIRECTION
+                - METERING_POINT_ALREADY_ASSIGNED
+                - METERING_POINT_NOT_ALLOWED_TO_PARTICIPATE
+                - METERING_POINT_NOT_ACTIVE_OR_IN_USE_FOR_REQUESTED_DATE
+                - DISTRIBUTION_MODEL_DOES_NOT_MATCH
+                - SUM_OF_ASSIGNMENTS_NEEDS_TO_BE_SMALLER_OR_EQUAL_100
+                - REGISTRATION_EXECUTED
+                - DEACTIVATION_EXECUTED
+                - CLIENT_CONSENT_REJECTED
+                - CLIENT_CONSENT_TIMED_OUT
+                - REQUESTED_DATA_CANNOT_BE_DELIVERED
+                - CLIENT_CONSENT_ACCEPTED
+                - CONSENT_REVOKED_SUCCESSFUL
+                - CONSENT_NOT_FOUND
+                - CONSENT_ALREADY_EXISTS
+                - CONSENT_ID_EXPIRED
+                - COMMUNITY_ID_NOT_EXISTING
+                - SMARTMETER_NOT_EXISTING
+                - SUM_OF_SHARE_FACTOR_NEEDS_TO_BE_SMALLER_OR_EQUAL_100
+                - CLIENT_CONSENT_REVOKED
+                - METERING_POINT_NOT_IN_AREA_OF_ENERGY_COMMUNITY
+                - PARTICIPATION_FACTOR_OF_100_EXCEEDED
+                - PARTICIPATION_LIMIT_EXCEEDED
+                - MISSING_RESPONSE_FROM_PROCESS_REFRESH
+                - CONSENT_WAS_REVOKED
+                - UNSTABLE_METERING_POINT_CONNECTION
+            nullable: true
+        ErrorType:
+            type: string
+            enum:
+                - SystemError
+                - ProcessError
+        ResolveActions:
+            type: string
+            enum:
+                - EditMeteringPointNumber
+                - EditParticipationFactor
+                - RestartRegistration
+                - EditStartDate
+                - EditShareValue
+                - EditMeteringPointEnergyDirection
+                - PleaseWait
+                - NoAction
+        Error:
+            required:
+                - errorType
+                - isResolvable
+            type: object
+            properties:
+                category:
+                    $ref: "#/components/schemas/ResponseErrorCategory"
+                code:
+                    type: integer
+                    format: int32
+                    minimum: 0
+                relatedMarketProcess:
+                    $ref: "#/components/schemas/MarketProcessId"
+                errorType:
+                    $ref: "#/components/schemas/ErrorType"
+                isResolvable:
+                    type: boolean
+                isDismissable:
+                    type: boolean
+                resolveActions:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/ResolveActions"
+        EnergyRequestEligibility:
+            type: object
+            required:
+                - isAllowed
+            properties:
+                isAllowed:
+                    type: boolean
+                rejectionReason:
+                    type: string
+                    enum:
+                        - ACTIVE_PROCESS_EXISTS
+                        - COMMUNITY_NOT_ONBOARDED
+                nextAllowedAt:
+                    type: string
+                    format: date-time
+        CertificateEnvironment:
+            type: string
+            enum:
+                - TEST
+                - PROD
+        OnboardingType:
+            type: string
+            enum:
+                - NEW
+                - MIGRATION
+        StartOnboardingRequest:
+            type: object
+            required:
+                - backendId
+                - displayName
+                - certificateEnvironment
+                - onboardingType
+            properties:
+                backendId:
+                    type: string
+                displayName:
+                    type: string
+                certificateEnvironment:
+                    $ref: "#/components/schemas/CertificateEnvironment"
+                onboardingType:
+                    $ref: "#/components/schemas/OnboardingType"
+                uploadNotBefore:
+                    type: string
+                    format: date-time
+        CommunityActivation:
+            type: object
+            required:
+                - communityId
+                - communityNumber
+                - backendId
+                - lastSyncedOn
+            properties:
+                communityId:
+                    $ref: "#/components/schemas/CommunityId"
+                communityNumber:
+                    type: string
+                backendId:
+                    type: string
+                onboardingStatus:
+                    type: string
+                    nullable: true
+                    description: KEP onboarding status. Null when KEP has no record for this community yet (i.e. onboarding has not been started).
+                    enum:
+                        - STARTED
+                        - ACTIVE
+                        - SUSPENDED
+                        - TERMINATED
+                        - COMPLETED
+                onboardingToken:
+                    type: string
+                    nullable: true
+                    description: Current step in the onboarding state machine. Null when KEP has no record yet.
+                lastSyncedOn:
+                    type: string
+                    format: date-time
+        OnboardingStatus:
+            type: object
+            properties:
+                backendId:
+                    type: string
+                status:
+                    type: string
+                    enum:
+                        - STARTED
+                        - ACTIVE
+                        - SUSPENDED
+                        - TERMINATED
+                        - COMPLETED
+                token:
+                    type: string
+                    enum:
+                        - STEP_1_1_ONEPASSWORD_INIT
+                        - STEP_2_1_PARTNER_CREATE
+                        - STEP_2_2_PARTNER_CERT_REQUEST
+                        - STEP_3_1_JIRA_TICKET_CREATE
+                        - STEP_3_2_JIRA_TICKET_WAIT
+                        - STEP_4_1_PARTNER_CERT_INSTALLATION
+                        - STEP_4_2_PARTNER_WAIT_FOR_UPLOAD
+                        - STEP_4_3_PARTNER_UPLOAD
+                        - STEP_4_2_PARTNER_UPLOAD
+                        - STEP_4_4_PARTNER_CERT_WAIT_FOR_SET_DEFAULT
+                        - STEP_4_5_PARTNER_CERT_SET_DEFAULT
+                        - STEP_5_1_COMPLETED
+                        - RENEWAL_1_CERT_REQUEST
+                        - RENEWAL_2_JIRA_TICKET_CREATE
+                        - RENEWAL_3_JIRA_TICKET_WAIT
+                        - RENEWAL_4_CERT_INSTALLATION
+                        - RENEWAL_5_PARTNER_UPLOAD
+                        - RENEWAL_6_CERT_WAIT_FOR_SET_DEFAULT
+                        - RENEWAL_7_CERT_SET_DEFAULT

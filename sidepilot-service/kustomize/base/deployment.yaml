@@ -1,0 +1,225 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sidepilot-server
+  labels:
+    app.kubernetes.io/name: sidepilot-server
+    app.kubernetes.io/part-of: sidepilot
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sidepilot-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sidepilot-server
+        app.kubernetes.io/part-of: sidepilot
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: server
+          image: at.salzburgag.ds.energycommunities.sidepilot/sidepilot-server:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: sidepilot-server-config
+            - secretRef:
+                name: sidepilot-server-secrets
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sidepilot-postgres-login
+                  key: password
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 1536Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: runtime
+              mountPath: /data/runtime
+            - name: deployment-config
+              mountPath: /etc/sidepilot-deployment
+              readOnly: true
+            - name: model-config
+              mountPath: /app/packages/server/configs/models/foundry.yaml
+              subPath: foundry.yaml
+              readOnly: true
+      volumes:
+        - name: runtime
+          persistentVolumeClaim:
+            claimName: sidepilot-server-runtime
+        - name: deployment-config
+          projected:
+            sources:
+              - configMap:
+                  name: sidepilot-deployment-config
+                  items:
+                    - key: deployment.yaml
+                      path: deployment.yaml
+                    - key: feature-operation-map.yaml
+                      path: feature-operation-map.yaml
+                    - key: page-operation-map.yaml
+                      path: page-operation-map.yaml
+              - configMap:
+                  name: sidepilot-openapi-onboarding
+                  items:
+                    - key: onboarding-service.yml
+                      path: openapi/onboarding-service.yml
+              - configMap:
+                  name: sidepilot-openapi-billing
+                  items:
+                    - key: billing-api.yml
+                      path: openapi/billing-api.yml
+              - configMap:
+                  name: sidepilot-openapi-community-management
+                  items:
+                    - key: community-management-service.yml
+                      path: openapi/community-management-service.yml
+              - configMap:
+                  name: sidepilot-openapi-market-processes
+                  items:
+                    - key: market-processes.yml
+                      path: openapi/market-processes.yml
+              - configMap:
+                  name: sidepilot-openapi-metering-data
+                  items:
+                    - key: metering-data-service.yml
+                      path: openapi/metering-data-service.yml
+              - configMap:
+                  name: sidepilot-openapi-participant
+                  items:
+                    - key: participant-service.yml
+                      path: openapi/participant-service.yml
+        - name: model-config
+          configMap:
+            name: sidepilot-model-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knowledge-system
+  labels:
+    app.kubernetes.io/name: knowledge-system
+    app.kubernetes.io/part-of: sidepilot
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: knowledge-system
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: knowledge-system
+        app.kubernetes.io/part-of: sidepilot
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: api
+          image: at.salzburgag.ds.energycommunities.sidepilot/knowledge-system:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3005
+          envFrom:
+            - configMapRef:
+                name: knowledge-system-config
+            - secretRef:
+                name: knowledge-system-secret
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: runtime-state
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+            - name: model-config
+              mountPath: /etc/sidepilot-model-config/foundry.yaml
+              subPath: foundry.yaml
+              readOnly: true
+      volumes:
+        - name: runtime-state
+          persistentVolumeClaim:
+            claimName: knowledge-system-runtime
+        - name: tmp
+          emptyDir: {}
+        - name: model-config
+          configMap:
+            name: sidepilot-model-config

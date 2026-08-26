@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sidepilot-server-config
+data:
+  SIDEPILOT_PUBLIC_BASE_URL: https://sidepilot.shared.salzburg-ag.tech
+  SIDEPILOT_JWT_AUDIENCE: 624326bf-46eb-420d-a297-c4d81a2e2294
+  SIDEPILOT_ENDUSER_JWT_ISSUER: https://dscustomersp.b2clogin.com/88bba1b7-87e1-4240-9d9e-a78cad2c72c2/v2.0/
+  SIDEPILOT_ENDUSER_JWT_JWKS_URI: https://dscustomersp.b2clogin.com/dscustomersp.onmicrosoft.com/b2c_1a_tou_susi/discovery/v2.0/keys
+  SIDEPILOT_ENDUSER_JWT_AUDIENCE: ba38a148-d032-4fe0-8766-e2881870ad87
+  SIDEPILOT_PILOT_COMMUNITY_MANAGEMENT_API_URL: https://ec-community-management-api.shared.salzburg-ag.tech
+  SIDEPILOT_PILOT_PARTICIPANT_API_URL: https://ec-participant-api.shared.salzburg-ag.tech
+  SIDEPILOT_PILOT_BILLING_API_URL: https://ec-billing.shared.salzburg-ag.tech
+  SIDEPILOT_PILOT_METER_MEASUREMENT_API_URL: https://ec-meter-measurement-service.shared.salzburg-ag.tech
+  SIDEPILOT_PILOT_MARKET_PROCESSES_API_URL: https://ec-market-processes-service.shared.salzburg-ag.tech
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: knowledge-system-config
+data:
+  KNOWLEDGE_CORS_ALLOW_ORIGIN: https://knowledge-system.shared.salzburg-ag.tech

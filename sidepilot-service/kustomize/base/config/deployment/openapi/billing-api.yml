@@ -1,0 +1,1233 @@
+openapi: 3.0.1
+info:
+  title: Billing Service
+  description: This is a backend service for billing
+  contact:
+    name: "Salzburg AG für Energie, Verkehr und Telekommunikation"
+    url: https://github.com/salzburg-ag
+    email: kundenservice@salzburg-ag.at
+  version: 1.0.0
+tags:
+  - name: Billing
+paths:
+  /api/communities/{communityId}/billing-periods:
+    get:
+      tags:
+        - Billing
+      summary: Lists all billing periods for a community
+      operationId: getBillingPeriods
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+      responses:
+        "200":
+          description: A list of billing period summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillingPeriodSummaryResponse'
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this community
+        "404":
+          description: Community not found
+    post:
+      tags:
+        - Billing
+      summary: Creates and calculates a new billing period
+      operationId: createBillingPeriod
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: notifyAdmins
+          in: query
+          required: false
+          description: If true, notifies community admins about the billing period creation
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingRequest"
+      responses:
+        "201":
+          description: Billing period created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingPeriodResponse"
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not in ACTIVE status or not authorized
+  /api/communities/{communityId}/billing-periods/{billingPeriodId}:
+    get:
+      tags:
+        - Billing
+      summary: Get a specific billing period by ID
+      operationId: getBillingPeriodById
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: The requested billing period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingPeriodResponse"
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Billing Period not found
+    patch:
+      tags:
+        - Billing
+      summary: Publishes a billing period
+      operationId: publishBillingPeriod
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+        - name: notifyMember
+          in: query
+          required: false
+          description: If true, notifies members about the billing period availability
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: Billing period published successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingPeriodResponse"
+        "400":
+          description: Invalid request or billing period cannot be published
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Billing Period not found
+    delete:
+      tags:
+        - Billing
+      summary: Deletes a billing period by ID
+      operationId: deleteBillingPeriod
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "204":
+          description: Billing period deleted successfully
+        "400":
+          description: Invalid request or billing period cannot be deleted
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Billing Period not found
+  /api/communities/{communityId}/billing-periods-preview:
+    get:
+      tags:
+        - Billing
+      summary: Previews a billing period
+      operationId: previewBillingPeriod
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        "201":
+          description: billing response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingResponse"
+        "400":
+          description: Invalid request
+        "403":
+          description: User is not in ACTIVE status
+        "401":
+          description: User is not authenticated
+  /api/communities/{communityId}/metering-points-assignements/{meteringPointAssignmentId}/bill-document-preview:
+    get:
+      tags:
+        - Billing
+      summary: Previews a single bill for a specific metering point
+      operationId: previewBillHtmlDocument
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: meteringPointAssignmentId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/MeteringPointAssignmentId"
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: billType
+          in: query
+          required: false
+          description: Type of bill to preview. Required when a metering point has multiple bill types (e.g., both an energy invoice and a membership fee invoice).
+          schema:
+            $ref: '#/components/schemas/BillType'
+      responses:
+        "200":
+          description: Bill Preview HTML file
+          content:
+            text/html:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Metering Point not found
+  /api/communities/{communityId}/billing-periods/{billingPeriodId}/bill/{billId}/document:
+    get:
+      tags:
+        - Billing
+      summary: Downloads the generated bill document for a specific bill
+      operationId: getBillDocument
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+        - name: billId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Finalized bill document
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community, Billing Period, or Bill not found
+        "409":
+          description: Billing Period is not in a generated or published state
+  /api/communities/{communityId}/billing-periods/{billingPeriodId}/summary:
+    get:
+      tags:
+        - Billing
+      summary: Downloads the summary document for the billing period
+      operationId: getBillingPeriodSummaryDocument
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: Finalized billing period summary document
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Billing Period not found
+  /api/communities/{communityId}/billing-periods/{billingPeriodId}/sepa-debit-csv:
+    get:
+      tags:
+        - Billing
+      summary: Downloads the sepa debit csv for the billing period
+      operationId: getSepaDebitCsvForBillingPeriod
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: Valid SEPA Debit CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+    head:
+      tags:
+        - Billing
+      summary: Checks if the sepa debit csv for the billing period is available
+      operationId: checkSepaDebitCsvAvailability
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: SEPA Debit CSV is available
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: SEPA Debit CSV not found or not yet generated
+  /api/communities/{communityId}/billing-periods/{billingPeriodId}/sepa-transfer-csv:
+    get:
+      tags:
+        - Billing
+      summary: Downloads the sepa transfer csv for the billing period
+      operationId: getSepaTransferCsvForBillingPeriod
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: Valid SEPA Transfer CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+    head:
+      tags:
+        - Billing
+      summary: Checks if the sepa transfer csv for the billing period is available
+      operationId: checkSepaTransferCsvAvailability
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: SEPA Transfer CSV is available
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: SEPA Transfer CSV not found or not yet generated
+  /api/communities/{communityId}/billing-periods/{billingPeriodId}/datev-csv:
+    get:
+      tags:
+        - Billing
+      summary: Downloads the DATEV accounting CSV for the billing period
+      operationId: getDatevCsvForBillingPeriod
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: DATEV-compatible CSV export for accounting
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+  /api/communities/{communityId}/billing-periods/{billingPeriodId}/invoices:
+    get:
+      tags:
+        - Billing
+      summary: Downloads a zip file containing all invoice documents for the billing period
+      operationId: getBillingPeriodInvoicesZip
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: Zip archive containing all invoice documents
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Billing Period not found
+        "409":
+          description: Billing Period is not in a generated or published state
+  /api/communities/{communityId}/billing-periods/{billingPeriodId}/spreadsheet:
+    get:
+      tags:
+        - Billing
+      summary: Downloads the Excel spreadsheet for the billing period
+      operationId: getSpreadsheetForBillingPeriod
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: Valid Excel spreadsheet file (.xlsx)
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Billing Period not found
+  /api/communities/{communityId}/published-billing-periods:
+    get:
+      tags:
+        - WEB_APP_PARTICIPANT_BILLING
+      summary: Gets of published billing cycles of the participant in the community
+        in community
+      operationId: getPublishedBillingPeriods
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+      responses:
+        "200":
+          description: A list of billing period summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillingPeriodSummaryResponse'
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this community
+        "404":
+          description: Community not found
+  /api/communities/{communityId}/participant/{participantId}/published-billing-periods/{billingPeriodId}:
+    get:
+      tags:
+        - WEB_APP_PARTICIPANT_BILLING
+      summary: Get a specific published billing period by ID
+      operationId: getPublishedBillingPeriodById
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ParticipantId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: The requested billing period
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublishedBillingPeriodResponse"
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Billing Period not found
+  /api/communities/{communityId}/participant/{participantId}/published-billing-periods/{billingPeriodId}/invoices:
+    get:
+      tags:
+        - WEB_APP_PARTICIPANT_BILLING
+      summary: Get all invoices for a specific published billing period for a participant
+      operationId: getPublishedBillingPeriodInvoicesZip
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ParticipantId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+      responses:
+        "200":
+          description: Zip archive containing all invoice documents
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community or Billing Period not found
+        "409":
+          description: Billing Period is not in a generated or published state
+  /api/communities/{communityId}/participant/{participantId}/published-billing-periods/{billingPeriodId}/bills/{billId}:
+    get:
+      tags:
+        - WEB_APP_PARTICIPANT_BILLING
+      summary: Get details of a specific bill, including payment info and QR code
+      operationId: getPublishedBillDetails
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ParticipantId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+        - name: billId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillId"
+      responses:
+        "200":
+          description: The requested bill details with payment information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublishedBillDetailsResponse"
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Bill not found
+  /api/communities/{communityId}/participant/{participantId}/published-billing-periods/{billingPeriodId}/bills/{billId}/document:
+    get:
+      tags:
+        - WEB_APP_PARTICIPANT_BILLING
+      summary: Downloads the generated bill document for a specific bill (Participant view)
+      operationId: getPublishedBillDocument
+      parameters:
+        - name: communityId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/CommunityId"
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/ParticipantId"
+        - name: billingPeriodId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillingPeriodId"
+        - name: billId
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BillId"
+      responses:
+        "200":
+          description: Finalized bill document
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid request
+        "401":
+          description: User is not authenticated
+        "403":
+          description: User is not authorized to access this resource
+        "404":
+          description: Community, Participant, Billing Period, or Bill not found
+        "409":
+          description: Billing Period is not in a published state
+components:
+  schemas:
+    CommunityId:
+      type: string
+      format: uuid
+    MeteringPointAssignmentId:
+      type: string
+      format: uuid
+    BillingPeriodId:
+      type: string
+      format: uuid
+    ParticipantId:
+      type: string
+      format: uuid
+    BillId:
+      type: string
+      format: uuid
+    BillingPeriodStatus:
+      type: string
+      enum:
+        - OPEN
+        - PREVIEW
+        - IN_GENERATION
+        - READY_TO_PUBLISH
+        - PUBLISHED
+        - DOCUMENT_GENERATION_FAILED
+    BillType:
+      type: string
+      enum:
+        - INVOICE
+        - CREDIT_NOTE
+        - MEMBERSHIP_FEE_INVOICE
+    BillingPeriodSummaryResponse:
+      type: object
+      required:
+        - id
+        - startDate
+        - endDate
+        - status
+        - createdDate
+      properties:
+        id:
+          $ref: '#/components/schemas/BillingPeriodId'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          $ref: '#/components/schemas/BillingPeriodStatus'
+        createdDate:
+          type: string
+          format: 'date-time'
+    BillingPeriodResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/BillingResponse'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              $ref: '#/components/schemas/BillingPeriodId'
+    BillingResponse:
+      type: object
+      required:
+        - startDate
+        - endDate
+        - invoices
+        - creditNotes
+        - billingReport
+        - status
+        - createdAt
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        invoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceResponse'
+        creditNotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreditNoteResponse'
+        membershipFeeInvoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipFeeInvoiceResponse'
+        billingReport:
+          $ref: '#/components/schemas/BillingReportResponse'
+        status:
+          $ref: '#/components/schemas/BillingPeriodStatus'
+        createdAt:
+          type: string
+          format: date-time
+    BillingReportResponse:
+      type: object
+      required:
+        - totalSharedEnergy
+        - totalConsumedEnergy
+        - energyBalanceChecksum
+        - qualityReport
+        - salesReport
+        - procurementReport
+      properties:
+        totalSharedEnergy:
+          type: number
+        totalConsumedEnergy:
+          type: number
+        energyBalanceChecksum:
+          type: number
+        qualityReport:
+          $ref: '#/components/schemas/QualityReportResponse'
+        salesReport:
+          $ref: '#/components/schemas/SalesReportResponse'
+        procurementReport:
+          $ref: '#/components/schemas/ProcurementReportResponse'
+        membershipFeeReport:
+          $ref: '#/components/schemas/MembershipFeeReportResponse'
+    QualityReportResponse:
+      type: object
+      required:
+        - isDataComplete
+        - hasInconsistentData
+      properties:
+        isDataComplete:
+          type: boolean
+        hasInconsistentData:
+          type: boolean
+    SalesReportResponse:
+      type: object
+      required:
+        - byTariff
+      properties:
+        byTariff:
+          type: array
+          items:
+            $ref: '#/components/schemas/TariffAmountSummaryResponse'
+    ProcurementReportResponse:
+      type: object
+      allOf:
+        - type: object
+          required:
+            - procurementByTaxNone
+            - procurementByTaxFarmer
+            - procurementByTaxTaxable
+          properties:
+            procurementByTaxNone:
+              type: array
+              items:
+                $ref: '#/components/schemas/TariffAmountSummaryResponse'
+            procurementByTaxFarmer:
+              type: array
+              items:
+                $ref: '#/components/schemas/TariffAmountSummaryResponse'
+            procurementByTaxTaxable:
+              type: array
+              items:
+                $ref: '#/components/schemas/TariffAmountSummaryResponse'
+    TariffAmountSummaryResponse:
+      type: object
+      required:
+        - tariff
+        - energyAmount
+        - netAmount
+        - taxAmount
+        - grossAmount
+      properties:
+        tariff:
+          type: number
+        energyAmount:
+          type: number
+        netAmount:
+          type: number
+        taxAmount:
+          type: number
+        grossAmount:
+          type: number
+    InvoiceResponse:
+      type: object
+      required:
+        - id
+        - meteringPointId
+        - meteringPointNumber
+        - energyAmount
+        - tariff
+        - grossAmount
+        - netAmount
+        - vatAmount
+        - taxRate
+        - number
+        - createdDate
+        - senderAddress
+        - receiverAddress
+      properties:
+        id:
+          type: string
+          format: uuid
+        meteringPointId:
+          type: string
+          format: uuid
+        meteringPointNumber:
+          type: string
+        energyAmount:
+          type: number
+        tariff:
+          type: number
+        grossAmount:
+          type: number
+        netAmount:
+          type: number
+        vatAmount:
+          type: number
+        taxRate:
+          $ref: '#/components/schemas/TaxRate'
+        number:
+          type: string
+        createdDate:
+          type: string
+          format: date
+        senderAddress:
+          $ref: '#/components/schemas/BillAddressResponse'
+        receiverAddress:
+          $ref: '#/components/schemas/BillAddressResponse'
+        paymentDetails:
+          $ref: '#/components/schemas/PaymentDetails'
+    CreditNoteResponse:
+      type: object
+      required:
+        - id
+        - meteringPointId
+        - meteringPointNumber
+        - energyAmount
+        - tariff
+        - grossAmount
+        - netAmount
+        - vatAmount
+        - taxRate
+        - number
+        - createdDate
+        - senderAddress
+        - receiverAddress
+      properties:
+        id:
+          type: string
+          format: uuid
+        meteringPointId:
+          type: string
+          format: uuid
+        meteringPointNumber:
+          type: string
+        energyAmount:
+          type: number
+        tariff:
+          type: number
+        grossAmount:
+          type: number
+        netAmount:
+          type: number
+        vatAmount:
+          type: number
+        taxRate:
+          $ref: '#/components/schemas/TaxRate'
+        number:
+          type: string
+        createdDate:
+          type: string
+          format: date
+        senderAddress:
+          $ref: '#/components/schemas/BillAddressResponse'
+        receiverAddress:
+          $ref: '#/components/schemas/BillAddressResponse'
+        recipientBankingInformation:
+          $ref: '#/components/schemas/BankingInformation'
+    BillAddressResponse:
+      type: object
+      required:
+        - contactName
+        - streetHouseNumber
+        - postalCode
+        - city
+        - contactEmail
+      properties:
+        contactName:
+          type: string
+        streetHouseNumber:
+          type: string
+        postalCode:
+          type: string
+        city:
+          type: string
+        addressAdditions:
+          type: string
+        contactEmail:
+          type: string
+          format: email
+    TaxRate:
+      type: string
+      enum:
+        - NONE
+        - TAXABLE
+        - FARMER_TAXABLE
+    PaymentDetails:
+      type: object
+      properties:
+        selfPayment:
+          $ref: '#/components/schemas/SelfPayment'
+        sepaDirectDebit:
+          $ref: '#/components/schemas/SepaDirectDebit'
+    SelfPayment:
+      type: object
+      properties:
+        companyBankingInfo:
+          $ref: '#/components/schemas/BankingInformation'
+    SepaDirectDebit:
+      type: object
+      properties:
+        customerSepaInfo:
+          $ref: '#/components/schemas/SepaDirectDebitInfo'
+    BankingInformation:
+      type: object
+      properties:
+        iban:
+          type: string
+        bic:
+          type: string
+        accountHolder:
+          type: string
+    SepaDirectDebitInfo:
+      type: object
+      properties:
+        accountOwnerName:
+          type: string
+        iban:
+          type: string
+        mandateReference:
+          type: string
+        mandateIssueDate:
+          type: string
+          format: date
+    BillingRequest:
+      type: object
+      required:
+        - startingDate
+        - endDate
+      properties:
+        startingDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+    PublishedBillingPeriodResponse:
+      type: object
+      required:
+        - startDate
+        - endDate
+        - invoices
+        - creditNotes
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        invoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceResponse'
+        creditNotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/CreditNoteResponse'
+        membershipFeeInvoices:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipFeeInvoiceResponse'
+    PublishedBillDetailsResponse:
+      type: object
+      required:
+        - id
+        - participantId
+        - billType
+        - meteringPointNumber
+        - energyAmount
+        - tariff
+        - vatRate
+        - grossAmount
+        - number
+        - billingPeriodStartDate
+        - billingPeriodEndDate
+      properties:
+        id:
+          $ref: '#/components/schemas/BillId'
+        participantId:
+          $ref: '#/components/schemas/ParticipantId'
+        billType:
+          $ref: '#/components/schemas/BillType'
+        meteringPointNumber:
+          type: string
+        energyAmount:
+          type: number
+        tariff:
+          type: number
+        vatRate:
+          type: number
+        grossAmount:
+          type: number
+        number:
+          type: string
+        billingPeriodStartDate:
+          type: string
+          format: date
+        billingPeriodEndDate:
+          type: string
+          format: date
+        paymentInfo:
+          type: object
+          nullable: true
+          description: Payment information for manual transfer. Nullable if not applicable.
+          properties:
+            accountOwnerName:
+              type: string
+            iban:
+              type: string
+            referenceNumber:
+              type: string
+        qrCode:
+          type: string
+          nullable: true
+          description: Base64 encoded image of the SEPA QR code. Nullable if not applicable.
+    MembershipFeeInvoiceResponse:
+      type: object
+      required:
+        - id
+        - meteringPointId
+        - meteringPointNumber
+        - feeAmount
+        - description
+        - grossAmount
+        - netAmount
+        - vatAmount
+        - taxRate
+        - number
+        - createdDate
+        - senderAddress
+        - receiverAddress
+      properties:
+        id:
+          type: string
+          format: uuid
+        meteringPointId:
+          type: string
+          format: uuid
+        meteringPointNumber:
+          type: string
+        feeAmount:
+          type: number
+        description:
+          type: string
+        grossAmount:
+          type: number
+        netAmount:
+          type: number
+        vatAmount:
+          type: number
+        taxRate:
+          $ref: '#/components/schemas/TaxRate'
+        number:
+          type: string
+        createdDate:
+          type: string
+          format: date
+        senderAddress:
+          $ref: '#/components/schemas/BillAddressResponse'
+        receiverAddress:
+          $ref: '#/components/schemas/BillAddressResponse'
+        paymentDetails:
+          $ref: '#/components/schemas/PaymentDetails'
+    MembershipFeeReportResponse:
+      type: object
+      required:
+        - byFeeAmount
+      properties:
+        byFeeAmount:
+          type: array
+          items:
+            $ref: '#/components/schemas/MembershipFeeSummaryResponse'
+    MembershipFeeSummaryResponse:
+      type: object
+      required:
+        - feeAmount
+        - count
+        - netAmount
+        - taxAmount
+        - grossAmount
+      properties:
+        feeAmount:
+          type: number
+        count:
+          type: integer
+        netAmount:
+          type: number
+        taxAmount:
+          type: number
+        grossAmount:
+          type: number

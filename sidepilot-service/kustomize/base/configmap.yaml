@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sidepilot-server-config
+data:
+  SIDEPILOT_DEPLOYMENT_CONFIG_PATH: /etc/sidepilot-deployment/deployment.yaml
+  SIDEPILOT_PILOT_DATABASE_URL: postgresql://sidepilot_login@sidepilot-postgres-rw.energycommunities.svc.cluster.local:5432/sidepilot
+  DATABASE_URL: postgresql://sidepilot_login@sidepilot-postgres-rw.energycommunities.svc.cluster.local:5432/sidepilot
+  SIDEPILOT_MODEL: foundry
+  SIDEPILOT_SERVER_HOST: 0.0.0.0
+  SIDEPILOT_SERVER_PORT: "8080"
+  SIDEPILOT_PUBLIC_BASE_URL: https://sidepilot.shared-dev.salzburg-ag.tech
+  SIDEPILOT_ALLOWED_EMAILS: antonia.vigano@salzburg-ag.at,toren.gebauer@salzburg-ag.at,09021@salzburg-ag.at,gila.gfader@salzburg-ag.at,08912@salzburg-ag.at,ankita.negi@salzburg-ag.at
+  SIDEPILOT_JWT_VERIFY_TYPE: jwks
+  SIDEPILOT_JWT_ISSUER: https://login.microsoftonline.com/bb45f41a-457a-438b-88bb-ee3dd9cb48bc/v2.0
+  SIDEPILOT_JWT_AUDIENCE: 1bd6c183-90c5-4051-90ca-670b07dc1f84
+  SIDEPILOT_ENDUSER_JWT_ISSUER: https://enoxenergydev.b2clogin.com/e89981f7-a0df-495a-9662-72d2d2fb0a5d/v2.0/
+  SIDEPILOT_ENDUSER_JWT_JWKS_URI: https://enoxenergydev.b2clogin.com/enoxenergydev.onmicrosoft.com/b2c_1a_enoxshare_tou_susi/discovery/v2.0/keys
+  SIDEPILOT_ENDUSER_JWT_AUDIENCE: a41e7839-9ad4-413d-a331-1e47d13334a7
+  KNOWLEDGE_SYSTEM_API_URL: http://knowledge-system.energycommunities.svc.cluster.local:3005
+  SIDEPILOT_TASK_STORE_PATH: /data/runtime/task-history.json
+  SIDEPILOT_DOWNLOAD_DIR: /data/runtime/downloads
+  SIDEPILOT_AUDIT_FILE: /data/runtime/audit.jsonl
+  SIDEPILOT_PILOT_COMMUNITY_MANAGEMENT_API_URL: https://ec-community-management-api.shared-dev.salzburg-ag.tech
+  SIDEPILOT_PILOT_PARTICIPANT_API_URL: https://ec-participant-api.shared-dev.salzburg-ag.tech
+  SIDEPILOT_PILOT_BILLING_API_URL: https://billing.shared-dev.salzburg-ag.tech
+  SIDEPILOT_PILOT_METER_MEASUREMENT_API_URL: https://ec-meter-measurement-service.shared-dev.salzburg-ag.tech
+  SIDEPILOT_PILOT_MARKET_PROCESSES_API_URL: https://ec-market-processes-service.shared-dev.salzburg-ag.tech
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: knowledge-system-config
+data:
+  KNOWLEDGE_API_HOST: "0.0.0.0"
+  KNOWLEDGE_API_PORT: "3005"
+  KNOWLEDGE_WORKSPACES: pilot
+  KNOWLEDGE_WORKSPACE_ID: pilot
+  KNOWLEDGE_RETRIEVAL_PROFILE: fast_source
+  KNOWLEDGE_RETRIEVAL_CHUNKING: "1"
+  KNOWLEDGE_RETRIEVAL_HYBRID: "1"
+  KNOWLEDGE_AUTO_STRUCTURE: "1"
+  KNOWLEDGE_CHAT_MODEL: DeepSeek-V4-Flash
+  KNOWLEDGE_OPERATOR_DIR: /data
+  KNOWLEDGE_RUNTIME_STATE_PATH: /data/runtime-state.json
+  KNOWLEDGE_SOURCE_FILES_DIR: /data/source-files
+  KNOWLEDGE_OCR_LANGUAGES: deu+eng
+  KNOWLEDGE_OCR_CACHE_DIR: /data/ocr-cache
+  KNOWLEDGE_CORS_ALLOW_ORIGIN: https://knowledge-system.shared-dev.salzburg-ag.tech
+  KNOWLEDGE_SOURCE_REFRESH_ENABLED: "1"
+  KNOWLEDGE_QNA_GENERATION_ENABLED: "0"
+  KNOWLEDGE_QNA_GENERATION_HOUR: "3"
+  KNOWLEDGE_QNA_EMBEDDING_MODEL: text-embedding-3-small
+  KNOWLEDGE_MODEL_CONFIG_PATH: /etc/sidepilot-model-config/foundry.yaml

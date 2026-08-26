@@ -1,0 +1,261 @@
+pages:
+  - route: /de/:communityId/community-information
+    services:
+      - community-management
+      - participant
+    operations:
+      - deleteCommunityLogo
+      - deleteCommunityPaymentDetails
+      - generateCommunityInviteLink
+      - getCommunity
+      - getCommunityInviteLink
+      - getCommunityLogo
+      - getCommunityPaymentDetails
+      - getCommunitySettings
+      - regenerateCommunityInviteLink
+      - revokeCommunityInviteLink
+      - updateCommunityBaseInformation
+      - updateCommunityMembershipFee
+      - updateCommunityNotificationSettings
+      - updateCommunityPaymentDetails
+      - updateCommunitySettings
+      - updateCommunityTariffs
+      - updateCommunityVisibilityInformation
+      - uploadCommunityLogo
+  - route: /de/:communityId/dashboard
+    services: []
+    operations: []
+  - route: /de/:communityId/dashboard/community
+    services:
+      - meter-measurement
+    operations:
+      - getCommunityAvailableDataRange
+      - getCommunityDashboard
+      - getEnergyGraphDataByCommunity
+  - route: /de/:communityId/dashboard/consumption
+    services:
+      - meter-measurement
+    operations:
+      - getAdminConsumerDashboard
+      - getAdminConsumerEnergyGraphData
+      - getAdminMeteringPoints
+      - getCommunityAvailableDataRange
+      - getParticipantConsumerDashboard
+      - getParticipantConsumerEnergyGraphData
+      - getParticipantMeteringPoints
+  - route: /de/:communityId/dashboard/production
+    services:
+      - meter-measurement
+    operations:
+      - getAdminMeteringPoints
+      - getAdminProsumerDashboard
+      - getAdminProsumerEnergyGraphData
+      - getCommunityAvailableDataRange
+      - getParticipantMeteringPoints
+      - getParticipantProsumerDashboard
+      - getParticipantProsumerEnergyGraphData
+  - route: /de/:communityId/energy-data
+    services:
+      - community-management
+      - market-processes
+      - meter-measurement
+    operations:
+      - checkIfEligibleToRequestEnergyData
+      - createExportJob
+      - downloadExport
+      - getCommunityAvailableDataRange
+      - getCommunityMeteringPointAssignmentsWa
+      - getReport
+      - listExportJobs
+      - requestEnergyDataForEnergyCommunity
+  - route: /de/:communityId/faq-support
+    services: []
+    operations: []
+  - route: /de/:communityId/invoices
+    services: []
+    operations: []
+  - route: /de/:communityId/members
+    services:
+      - community-management
+    operations:
+      - deleteParticipantWa
+      - getCommunityMembersWa
+      - getCommunityReportEcms
+  - route: /de/:communityId/members/:id
+    services:
+      - community-management
+      - market-processes
+      - participant
+    operations:
+      - changeParticipationFactorMeteringPoints
+      - createAccountCommunityRole
+      - createParticipantAddressWa
+      - createPaymentOption
+      - deactivateMeteringPoints
+      - deleteAccountCommunityRole
+      - deleteMeteringPointAssignmentMembershipFeeWa
+      - deleteMeteringPointAssignmentWa
+      - deleteMeteringPointAssignmentWithoutActivationCheck
+      - deleteParticipantAddressWa
+      - deleteParticipantWa
+      - deletePaymentOption
+      - dismissMarketProcesses
+      - getAccountRoles
+      - getAssignedMeteringPoints
+      - getAvailableGridOperators
+      - getCommunityProfile
+      - getMarketProcess
+      - getMeteringPoints
+      - getParticipantAddressWa
+      - getParticipantAddressesWa
+      - getParticipantPaymentOptions
+      - getParticipantProfile
+      - getParticipantWa
+      - getUnassignedMeteringPoints
+      - registerMeteringPoints
+      - selectPaymentOptionForMeteringPoint
+      - updateMeteringPointAssignment
+      - updateMeteringPointAssignmentAdditionalInformationWa
+      - updateMeteringPointAssignmentAddressWa
+      - updateMeteringPointAssignmentEnergyTariffWa
+      - updateMeteringPointAssignmentMembershipFeeWa
+      - updateMeteringPointAssignmentPaymentOptionWa
+      - updateMeteringPointAssignmentTaxRateWa
+      - updateMeteringPointAssignmentWa
+      - updateParticipantAddressWa
+      - updateParticipantWa
+      - updatePaymentOption
+      - updateShareFactorMeteringPoints
+  - route: /de/:communityId/members/:id/metering-points/add
+    services:
+      - community-management
+      - market-processes
+    operations:
+      - createMeteringPointAssignmentWa
+      - createParticipantAddressWa
+      - createPaymentOption
+      - getAssignedMeteringPoints
+      - getAvailableGridOperators
+      - getCommunityMeteringPointAssignmentsWa
+      - getParticipantAddressesWa
+      - getParticipantPaymentOptions
+      - getUnassignedMeteringPoints
+      - selectPaymentOptionForMeteringPoint
+  - route: /de/:communityId/members/add
+    services:
+      - community-management
+    operations:
+      - createParticipantWa
+  - route: /de/:communityId/metering-points
+    services:
+      - community-management
+      - market-processes
+    operations:
+      - changeParticipationFactorMeteringPoints
+      - deactivateMeteringPoints
+      - deleteMeteringPointAssignmentMembershipFeeWa
+      - deleteMeteringPointAssignmentWa
+      - deleteMeteringPointAssignmentWithoutActivationCheck
+      - dismissMarketProcesses
+      - getAssignedMeteringPoints
+      - getAvailableGridOperators
+      - getCommunityMeteringPointAssignmentsWa
+      - getCommunityPaymentOptions
+      - getCommunityProfile
+      - getMarketProcess
+      - getMeteringPoints
+      - getParticipantAddressesWa
+      - getParticipantPaymentOptions
+      - getParticipantWa
+      - getUnassignedMeteringPoints
+      - registerMeteringPoints
+      - selectPaymentOptionForMeteringPoint
+      - updateMeteringPointAssignment
+      - updateMeteringPointAssignmentAdditionalInformationWa
+      - updateMeteringPointAssignmentAddressWa
+      - updateMeteringPointAssignmentEnergyTariffWa
+      - updateMeteringPointAssignmentMembershipFeeWa
+      - updateMeteringPointAssignmentPaymentOptionWa
+      - updateMeteringPointAssignmentTaxRateWa
+      - updateMeteringPointAssignmentWa
+      - updateShareFactorMeteringPoints
+  - route: /de/:communityId/my-invoices
+    services:
+      - billing
+    operations:
+      - getPublishedBillingPeriods
+      - getPublishedBillingPeriodById
+      - getPublishedBillDetails
+      - getPublishedBillDocument
+  - route: /de/:communityId/my-invoices/:id
+    services:
+      - billing
+    operations:
+      - getPublishedBillingPeriods
+      - getPublishedBillingPeriodById
+      - getPublishedBillDetails
+      - getPublishedBillDocument
+  - route: /de/:communityId/new-invoices
+    services:
+      - billing
+    operations:
+      - getBillingPeriods
+      - getBillingPeriodById
+      - createBillingPeriod
+      - previewBillingPeriod
+      - publishBillingPeriod
+  - route: /de/:communityId/onboarding
+    services:
+      - community-management
+    operations:
+      - bulkAcceptOnboardingRequests
+      - bulkRejectOnboardingRequests
+      - downloadBulkImportCleanTemplate
+      - listOnboardingRequests
+      - retryOnboardingRequestMaterialization
+      - uploadBulkImport
+  - route: /de/:communityId/onboarding/:id
+    services:
+      - community-management
+    operations:
+      - bulkAcceptOnboardingRequests
+      - bulkRejectOnboardingRequests
+      - getAvailableGridOperators
+      - getOnboardingRequest
+      - updateOnboardingRequest
+  - route: /de/:communityId/profile
+    services:
+      - community-management
+      - market-processes
+    operations:
+      - changeParticipationFactorMeteringPoints
+      - createParticipantAddressWa
+      - deactivateMeteringPoints
+      - deleteMeteringPointAssignmentMembershipFeeWa
+      - deleteMeteringPointAssignmentWa
+      - deleteMeteringPointAssignmentWithoutActivationCheck
+      - deleteParticipantAddressWa
+      - dismissMarketProcesses
+      - getAvailableGridOperators
+      - getCommunityProfile
+      - getMarketProcess
+      - getMeteringPoints
+      - getParticipantAddressWa
+      - getParticipantAddressesWa
+      - getParticipantMeteringPoints
+      - getParticipantPaymentOptions
+      - getParticipantProfile
+      - getParticipantWa
+      - registerMeteringPoints
+      - selectPaymentOptionForMeteringPoint
+      - updateMeteringPointAssignment
+      - updateMeteringPointAssignmentAdditionalInformationWa
+      - updateMeteringPointAssignmentAddressWa
+      - updateMeteringPointAssignmentEnergyTariffWa
+      - updateMeteringPointAssignmentMembershipFeeWa
+      - updateMeteringPointAssignmentPaymentOptionWa
+      - updateMeteringPointAssignmentTaxRateWa
+      - updateMeteringPointAssignmentWa
+      - updateParticipantAddressWa
+      - updateParticipantWa
+      - updateShareFactorMeteringPoints

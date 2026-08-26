@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sidepilot-server-runtime
+spec:
+  storageClassName: managed-csi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: knowledge-system-runtime
+spec:
+  storageClassName: managed-csi

@@ -1,0 +1,802 @@
+app:
+  id: pilot
+  name: enox.share
+  environment: development
+
+runtime_mode: user
+
+access_gate:
+  type: email_allowlist
+  claim: ${SIDEPILOT_JWT_CLAIM:-email}
+  emails_env: SIDEPILOT_ALLOWED_EMAILS
+  emails: []
+  managed: true
+
+token_verification:
+  type: ${SIDEPILOT_JWT_VERIFY_TYPE:-none}
+  issuer_env: SIDEPILOT_JWT_ISSUER
+  audience_env: SIDEPILOT_JWT_AUDIENCE
+  issuers:
+    - issuer_env: SIDEPILOT_JWT_ISSUER
+      audience_env: SIDEPILOT_JWT_AUDIENCE
+    - issuer_env: SIDEPILOT_ENDUSER_JWT_ISSUER
+      jwks_uri_env: SIDEPILOT_ENDUSER_JWT_JWKS_URI
+      audience_env: SIDEPILOT_ENDUSER_JWT_AUDIENCE
+
+database:
+  url: '${SIDEPILOT_PILOT_DATABASE_URL:?Set SIDEPILOT_PILOT_DATABASE_URL in packages/server/.env.local}'
+
+retrieval:
+  chat_backend: knowledge-system
+  knowledge_system:
+    base_url: '${KNOWLEDGE_SYSTEM_API_URL:-http://127.0.0.1:3005}'
+    workspace_id: pilot
+  sources: []
+
+api_access:
+  enabled: true
+  feature_map_path: ./feature-operation-map.yaml
+  page_operation_map_path: ./page-operation-map.yaml
+  specs:
+    - id: community-management
+      path: ./openapi/community-management-service.yml
+      base_url: '${SIDEPILOT_PILOT_COMMUNITY_MANAGEMENT_API_URL:?Set SIDEPILOT_PILOT_COMMUNITY_MANAGEMENT_API_URL in packages/server/.env.local}'
+      path_patterns:
+        - /api/community-management/
+        - /api/v2/community-management/
+        - /api/invite/
+      allowed_methods: [get, post, put, patch, delete]
+      operations:
+        - getAvailableGridOperators
+        - getCommunity
+        - getCommunityMembersWA
+        - getCommunityMeteringPointAssignmentsWA
+        - getCommunityPaymentOptions
+        - getParticipantWA
+        - getCommunityProfile
+        - getParticipantProfile
+        - getParticipantAddressesWA
+        - getParticipantAddressWA
+        - getParticipantPaymentOptions
+        - createParticipantWA
+        - updateParticipantWA
+        - createParticipantAddressWA
+        - updateParticipantAddressWA
+        - createMeteringPointAssignmentWA
+        - updateMeteringPointAssignmentWA
+        - deleteMeteringPointAssignmentWA
+        - updateMeteringPointAssignmentAddressWA
+        - updateMeteringPointAssignmentEnergyTariffWA
+        - updateMeteringPointAssignmentPaymentOptionWA
+        - updateMeteringPointAssignmentTaxRateWA
+        - updateMeteringPointAssignmentAdditionalInformationWA
+        - updateMeteringPointAssignmentMembershipFeeWA
+        - deleteMeteringPointAssignmentMembershipFeeWA
+        - selectPaymentOptionForMeteringPoint
+        - createPaymentOption
+        - updatePaymentOption
+        - getMeteringPointPaymentOptions
+        - updateCommunityBaseInformation
+        - updateCommunityVisibilityInformation
+        - getCommunityLogo
+        - uploadCommunityLogo
+        - deleteCommunityLogo
+        - getCommunityInviteLink
+        - generateCommunityInviteLink
+        - regenerateCommunityInviteLink
+        - revokeCommunityInviteLink
+        - getCommunityPaymentDetails
+        - updateCommunityPaymentDetails
+        - deleteParticipantWA
+        - deleteParticipantAddressWA
+        - deletePaymentOption
+        - updateMeteringPointAssignment
+        - getCommunityReportECMS
+    - id: onboarding
+      path: ./openapi/onboarding-service.yml
+      base_url: '${SIDEPILOT_PILOT_COMMUNITY_MANAGEMENT_API_URL:?Set SIDEPILOT_PILOT_COMMUNITY_MANAGEMENT_API_URL in packages/server/.env.local}'
+      path_patterns:
+        - /api/onboarding/
+      allowed_methods: [get, post, put]
+      operations:
+        - listOnboardingRequests
+        - countOpenOnboardingRequests
+        - getOnboardingRequest
+        - acceptOnboardingRequest
+        - rejectOnboardingRequest
+        - updateOnboardingRequest
+    - id: meter-measurement
+      path: ./openapi/metering-data-service.yml
+      base_url: '${SIDEPILOT_PILOT_METER_MEASUREMENT_API_URL:?Set SIDEPILOT_PILOT_METER_MEASUREMENT_API_URL in packages/server/.env.local}'
+      path_patterns:
+        - /api/communities/.*/(dashboard|energy-graph|available-data|data-quality)
+        - /api/communities/[^/]+/admin/metering-points
+        - /api/communities/[^/]+/participants/[^/]+/metering-points
+        - /api/communities/[^/]+/exports
+      allowed_methods: [get, post]
+      operations:
+        - getCommunityDashboard
+        - getCommunityAvailableDataRange
+        - getEnergyGraphDataByCommunity
+        - getReport
+        - getParticipantConsumerDashboard
+        - getParticipantProsumerDashboard
+        - getParticipantConsumerEnergyGraphData
+        - getParticipantProsumerEnergyGraphData
+        - getAdminMeteringPoints
+        - getAdminConsumerDashboard
+        - getAdminConsumerEnergyGraphData
+        - getAdminProsumerDashboard
+        - getAdminProsumerEnergyGraphData
+        - createExportJob
+        - listExportJobs
+        - downloadExport
+        - getParticipantMeteringPoints
+    - id: participant
+      path: ./openapi/participant-service.yml
+      base_url: '${SIDEPILOT_PILOT_PARTICIPANT_API_URL:?Set SIDEPILOT_PILOT_PARTICIPANT_API_URL in packages/server/.env.local}'
+      path_patterns:
+        - /api/participants/
+        - /api/account/[^/]+/communities/[^/]+/roles
+        - /api/communities/[^/]+/settings
+      allowed_methods: [get, patch]
+      operations:
+        - getParticipantPermissions
+        - getParticipantPermissionsByCommunity
+        - getAccountRoles
+        - getCommunitySettings
+        - updateCommunitySettings
+    - id: market-processes
+      path: ./openapi/market-processes.yml
+      base_url: '${SIDEPILOT_PILOT_MARKET_PROCESSES_API_URL:?Set SIDEPILOT_PILOT_MARKET_PROCESSES_API_URL in packages/server/.env.local}'
+      path_patterns:
+        - /api/communities/[^/]+/(metering-points|assigned-metering-points|unassigned-metering-points)
+        - /api/communities/[^/]+/processes
+        - /api/communities/[^/]+/energy(-request)?
+      allowed_methods: [get, post]
+      operations:
+        - getMeteringPoints
+        - getAssignedMeteringPoints
+        - getUnassignedMeteringPoints
+        - getParticipantMeteringPoints
+        - RegisterMeteringPoints
+        - changeParticipationFactorMeteringPoints
+        - deactivateMeteringPoints
+        - checkIfEligibleToRequestEnergyData
+        - requestEnergyDataForEnergyCommunity
+        - dismissMarketProcesses
+        - getMarketProcess
+        - updateShareFactorMeteringPoints
+    - id: billing
+      path: ./openapi/billing-api.yml
+      base_url: '${SIDEPILOT_PILOT_BILLING_API_URL:?Set SIDEPILOT_PILOT_BILLING_API_URL}'
+      allowed_methods: [get, post, patch]
+      operations:
+        - getBillingPeriods
+        - getBillingPeriodById
+        - createBillingPeriod
+        - previewBillingPeriod
+        - publishBillingPeriod
+        - getPublishedBillingPeriods
+        - getPublishedBillingPeriodById
+        - getPublishedBillDetails
+        - getPublishedBillDocument
+
+policies:
+  confirmations:
+    timeout_ms: 300000
+  role_mapping:
+    admin:
+      can: ["*"]
+    support:
+      can:
+        - knowledge.read
+        - customer.read
+        - tariff.read
+        - tariff.update
+
+frontend:
+  commands:
+    allowed:
+      - navigate
+      - set_field
+      - read_page_state
+      - highlight_entity
+      - refresh_resource
+      - submit_form
+      - show_notification
+
+runtime_context:
+  route_templates:
+    - /de/:communityId/dashboard/community
+    - /de/:communityId/members
+    - /de/:communityId/members/:participantId
+    - /de/:communityId/metering-points
+    - /de/:communityId/new-invoices
+    - /de/:communityId/onboarding/:requestId
+  action_argument_guards:
+    - action_id: updateEnergyTariff
+      request_patterns:
+        - "\\b(abnehmer|verbraucher|consumers?)\\b"
+      source_paths:
+        - community-metering-points
+        - community-assigned-metering-points
+      source_filters:
+        - field: meteringPointType
+          equals: CONSUMPTION
+      target_param: meteringPointUpdates
+      target_param_format: json_array
+      entry_mapping:
+        participantId: participantId
+        meteringPointAssignmentId: id
+      dedupe_field: meteringPointAssignmentId
+
+pages:
+  - route: /de/:communityId/dashboard/community
+    name: Community Dashboard
+    description: Overview dashboard showing community KPIs, available energy data range, and community energy graph values.
+    entityType: community
+    capabilities:
+      - type: view
+        description: View current community KPIs and energy graph values
+      - type: action
+        id: updateDateRange
+        description: Change dashboard date range and refresh visible energy data
+
+  - route: /de/:communityId/members
+    name: Member List
+    description: >-
+      Shows all members/participants in the energy community, including names and available
+      participant details. The list does not contain the Kundennummer (customerNumber) —
+      it is only available on the member detail (participant record via getParticipantWA).
+    entityType: participant
+    capabilities:
+      - type: view
+        description: View list of members and participant data
+      - type: select
+        entityType: participant
+
+  - route: /de/:communityId/members/:participantId
+    name: Member Detail
+    description: Shows participant details, metering points, and member-specific energy context.
+    entityType: participant
+    capabilities:
+      - type: view
+        description: View participant details and metering points
+      - type: select
+        entityType: meteringPoint
+      - type: action
+        id: viewEnergyData
+        description: Use participant consumer/prosumer dashboard and graph endpoints for this participant
+
+  - route: /de/:communityId/metering-points
+    name: Metering Points
+    description: >-
+      Shows all community metering point assignments with status, process, type, participant,
+      tariff, tax, payment option, and assignment IDs. Community-management assignment records
+      carry no lifecycle status — status comes from the market-process reads; assignment IDs
+      and delete eligibility come from community-management. The table has separate columns:
+      "Status" = activationStatus (ACTIVE/Aktiv, SCHEDULED/Geplant, ARCHIVED/Archiviert,
+      NOT_ACTIVE = "Neu" if never activated else "Inaktiv" per hasBeenActivated) and
+      "Prozess" = processStatus (REQUESTED/Angefragt, ACCEPTED/Akzeptiert, REJECTED/Abgelehnt
+      — rejected rows show a "Fehler beheben" link). "Aktiviert seit" = activationDate and is
+      only shown while activationStatus is ACTIVE. The per-point Prozesshistorie comes from
+      getAssignedMeteringPoints → processes[] (marketProcessType, startedOn = "Angefragt am",
+      completedOn, status; newest first).
+      IMPORTANT — to answer "what does the table show" (counts, "Neu"/"Inaktiv"/"Aktiv" rows,
+      their numbers), read the visible-data key community-metering-points: each row already
+      carries a derived "status" field holding the exact label the table's Status column shows
+      (Neu, Inaktiv, Aktiv, Geplant, Archiviert, Angefragt, Akzeptiert, Abgelehnt). Filter on that
+      field directly — e.g. status == "Neu" — and report those rows' "number". Do NOT recompute
+      the status from activationStatus/hasBeenActivated, do NOT use getMeteringPoints /
+      community-kep-metering-points on their own (that set includes points with no assignment,
+      which are NOT in the table), and do NOT use community-assigned-metering-points for the
+      Status column (it has no hasBeenActivated). Booleans are valid compute_stats where-values.
+      For a bulk change across metering points (e.g. set all Abnehmer tariffs), first fetch the
+      assignments via getCommunityMeteringPointAssignmentsWA — that API result is a record set
+      bulk_call can operate on (it carries id, participantId and meteringPointType); the
+      community-metering-points visible data from read_page_state cannot be used as a bulk_call
+      record set.
+      The table is URL-filterable via update_params: "metering-point=<AT-Nummer oder Suchtext>"
+      filters the rows, "meteringPointTables=0|1" selects the Zugewiesen/Nicht-zugewiesen tab —
+      use this when the user asks to filter the view (e.g. after naming the "Neu" points).
+    entityType: meteringPoint
+    capabilities:
+      - type: view
+        description: View all metering point assignments
+      - type: select
+        entityType: meteringPoint
+      - type: action
+        id: deleteInactiveAssignments
+        description: Delete eligible NOT_ACTIVE metering point assignments using community-management assignment IDs
+      - type: action
+        id: updateEnergyTariff
+        description: Update energy tariff for selected metering point assignments
+      - type: action
+        id: manageActivationStatus
+        description: "Metering-point status (activationStatus: active/scheduled/new/inactive/archived), process status (processStatus: requested/accepted/rejected), activation date, and the per-point process history (processes[]) come from the market-process reads (getMeteringPoints, getAssignedMeteringPoints), not community-management. Register a new/pending point (RegisterMeteringPoints); deactivate or change the participation factor of active ones (deactivateMeteringPoints, changeParticipationFactorMeteringPoints). Market-process writes — read status first, then confirm."
+
+  - route: /de/:communityId/dashboard/production
+    name: Production Dashboard
+    description: Production dashboard (Erzeugung) showing prosumer production statistics and the energy graph for a selectable date range.
+    entityType: community
+    capabilities:
+      - type: view
+        description: View production statistics and energy graph values
+
+  - route: /de/:communityId/dashboard/consumption
+    name: Consumption Dashboard
+    description: Consumption dashboard (Verbrauch) showing consumer consumption and autarky statistics with the energy graph.
+    entityType: community
+    capabilities:
+      - type: view
+        description: View consumption statistics and energy graph values
+
+  - route: /de/:communityId/members/add
+    name: Add Member
+    description: Form to create a new member/participant (Mitglied hinzufügen) in the energy community.
+    entityType: participant
+    capabilities:
+      - type: view
+        description: View the new-member creation form
+
+  - route: /de/:communityId/members/:participantId/metering-points/add
+    name: Assign Metering Point
+    description: Assign or create a metering point for a member, including participant address, payment option, and grid operator selection.
+    entityType: meteringPoint
+    capabilities:
+      - type: view
+        description: View the metering point assignment form for a member
+
+  - route: /de/:communityId/energy-data
+    name: Energy Data
+    description: Energy data page (Energiedaten) with the data-quality report, energy data export jobs, and requesting energy data for the community.
+    entityType: community
+    capabilities:
+      - type: view
+        description: View the data-quality report and export jobs
+
+  - route: /de/:communityId/new-invoices
+    name: Billing
+    description: >-
+      Current billing page (Abrechnung) with billing periods (Abrechnungsperioden).
+      The assistant can read billing periods and published bills AND run the billing
+      lifecycle itself (each write confirmation-gated): calculate a preview
+      (previewBillingPeriod, required query startDate + endDate), create and calculate
+      a period (createBillingPeriod, body startingDate + endDate, query notifyAdmins),
+      and publish it (publishBillingPeriod, query notifyMember). Status flow:
+      OPEN → PREVIEW → IN_GENERATION → READY_TO_PUBLISH → PUBLISHED (or
+      DOCUMENT_GENERATION_FAILED). While a period is IN_GENERATION, poll
+      getBillingPeriodById; after any billing write, refresh the page data via
+      refresh_resource with resource "billing-periods". Deleting billing periods and
+      generating DATEV/SEPA/spreadsheet/ZIP exports remain user-only on this page —
+      the assistant cannot read binary documents, so bill contents are checked via the
+      JSON reads (getBillingPeriodById, previewBillingPeriod, getPublishedBillDetails).
+      The "Abrechnung nicht verfügbar" empty state is normal (no complete billing
+      period yet); the first period can be created right here.
+    entityType: billingPeriod
+    capabilities:
+      - type: view
+        description: View billing periods and published bills; guide the user through the screen
+      - type: action
+        id: previewBillingPeriod
+        description: Calculate a billing preview for a date range (previewBillingPeriod) without persisting anything
+      - type: action
+        id: createBillingPeriod
+        description: Create and calculate a new billing period (createBillingPeriod) — confirm the date range with the user first
+      - type: action
+        id: publishBillingPeriod
+        description: Publish a READY_TO_PUBLISH billing period (publishBillingPeriod) — always confirm, publishing notifies members when notifyMember is set
+      - type: action
+        id: switchBillingTab
+        description: >-
+          Switch the billing tab yourself with update_page_params on the `invoices` URL
+          parameter — 0 Zusammenfassung, 1 Abnehmer, 2 Einspeiser, 3 Weitere Beiträge
+          (tab 3 exists only when membership-fee data is present). Never tell the user
+          you cannot switch tabs on this page. The tabs exist only once a billing period
+          has data; on the "Abrechnung nicht verfügbar" empty state there is nothing to
+          switch to.
+
+  - route: /de/:communityId/invoices
+    name: Legacy Billing
+    description: >-
+      Legacy billing page (Abrechnung bis 2025) showing old billing cycles with
+      publishing and document downloads from the legacy system. View/explain only
+      for the assistant — no legacy billing API access.
+    entityType: billingPeriod
+    capabilities:
+      - type: view
+        description: Read the visible legacy billing cycles and guide the user through the screen
+
+  - route: /de/:communityId/my-invoices
+    name: My Invoices
+    description: >-
+      Personal invoices page (Meine Rechnungen) listing the member's own bills and
+      credit notes with PDF/ZIP downloads.
+    entityType: invoice
+    capabilities:
+      - type: view
+        description: View own bills and credit notes
+
+  - route: /de/:communityId/my-invoices/:invoiceId
+    name: My Invoice Detail
+    description: >-
+      Single personal invoice with bill details, payment information, QR code, and
+      PDF download.
+    entityType: invoice
+    capabilities:
+      - type: view
+        description: View the bill details
+
+  - route: /de/:communityId/community-information
+    name: Community Settings
+    description: Community management page (Gemeinschaft verwalten) for editing base information, visibility, payment details, logo, and invite links.
+    entityType: community
+    capabilities:
+      - type: view
+        description: View and edit community settings
+
+  - route: /de/:communityId/onboarding
+    name: Onboarding
+    description: >-
+      Onboarding page (Beitrittsanfragen) listing open join requests with the open-requests
+      count. The assistant reviews and processes requests one at a time via the request
+      detail page; the Excel bulk member import on this page is user-only — for bulk
+      imports, explain the upload steps instead of performing them.
+    entityType: participant
+    capabilities:
+      - type: view
+        description: View open join requests and the open-requests count
+      - type: select
+        entityType: participant
+      - type: action
+        id: reviewOnboardingRequest
+        description: Accept or reject an individual join request (with confirmation), one request at a time
+
+  - route: /de/:communityId/onboarding/:requestId
+    name: Onboarding Request Detail
+    description: >-
+      Detail view of a single join request (Beitrittsanfrage) with the submitted member
+      data. Supports editing/saving the submission (updateOnboardingRequest) and accepting
+      or rejecting it individually.
+    entityType: participant
+    capabilities:
+      - type: view
+        description: View the submitted join-request data
+      - type: edit
+        fields: []
+        description: Correct and save the submitted data before accepting
+      - type: action
+        id: acceptOrRejectRequest
+        description: Accept or reject this join request (with confirmation)
+
+  - route: /de/:communityId/profile
+    name: Profile
+    description: Own profile page (Profil) with personal data, addresses, payment options, and own metering points; changes are permission-gated.
+    entityType: participant
+    capabilities:
+      - type: view
+        description: View own profile, addresses, and metering points
+
+  - route: /de/:communityId/dashboard
+    name: Dashboard
+    description: >-
+      Dashboard root that opens the community overview and switches between the three
+      sub-dashboards (Community, Erzeugung/production, Verbrauch/consumption). The
+      assistant has no API operations mapped to this route itself: it can navigate here,
+      read the visible page state, and explain the dashboards from knowledge; data
+      questions belong on the specific sub-dashboards.
+    entityType: community
+    capabilities:
+      - type: view
+        description: Read the visible overview and guide the user to the right sub-dashboard
+
+api_response_fields:
+  api_participant_getAccountRoles:
+    drop:
+      - communityId
+
+api_request_fields:
+  api_community-management_updateParticipantWA:
+    required:
+      - email
+
+record_tables:
+  locale: de-AT
+  labels:
+    number: Zählpunkt
+    type: Typ
+    meteringPointType: Typ
+    meteringPointActivations: Aktivierungen
+    currentEnergyTariff: Tarif (EUR/kWh)
+    contactName: Kontakt
+    additionalInformation: Zusatzinfo
+    meteringPointNumber: Zählpunkt
+    participantName: Mitglied
+    name: Name
+    email: E-Mail
+    status: Status
+    firstName: Vorname
+    lastName: Nachname
+    participationFactor: Anteil
+    validFrom: Gültig ab
+    validTo: Gültig bis
+    createdAt: Erstellt am
+    updatedAt: Geändert am
+    address: Adresse
+    city: Ort
+    zipCode: PLZ
+    street: Straße
+    fullName: Name
+    role: Rolle
+    phoneNumber: Telefon
+    memberJoinDate: Beitritt
+    participantId: Mitglied
+    currentTaxRate: Steuersatz
+    gridOperator.company: Netzbetreiber
+    consumptionMeteringPointAssignments: Abnahme-Zählpunkte
+    productionMeteringPointAssignments: Einspeise-Zählpunkte
+    activationStatus: Status
+    processStatus: Prozess
+    activationDate: Aktiviert seit
+    processes: Prozesshistorie
+    marketProcessType: Prozessart
+    startedOn: Angefragt am
+    completedOn: Abgeschlossen am
+    startingDate: Beginn
+    endDate: Ende
+  values:
+    meteringPointType:
+      PRODUCTION: Einspeiser
+      CONSUMPTION: Abnehmer
+    energyDirection:
+      PRODUCTION: Einspeiser
+      CONSUMPTION: Abnehmer
+    status:
+      REQUESTED: Angefragt
+      ACTIVE: Aktiv
+      REJECTED: Abgelehnt
+      ARCHIVED: Archiviert
+      ACCEPTED: Akzeptiert
+      NOT_ACTIVE: Inaktiv
+      SCHEDULED: Geplant
+      OPEN: Offen
+      PREVIEW: Vorschau
+      IN_GENERATION: In Bearbeitung
+      READY_TO_PUBLISH: Erstellt
+      PUBLISHED: Veröffentlicht
+      DOCUMENT_GENERATION_FAILED: Fehler
+    meteringPointStatus:
+      REQUESTED: Angefragt
+      ACTIVE: Aktiv
+      REJECTED: Abgelehnt
+      ARCHIVED: Archiviert
+      ACCEPTED: Akzeptiert
+      NOT_ACTIVE: Neu/Inaktiv (nie aktiviert = Neu)
+      SCHEDULED: Geplant
+    activationStatus:
+      REQUESTED: Angefragt
+      ACTIVE: Aktiv
+      REJECTED: Abgelehnt
+      ARCHIVED: Archiviert
+      ACCEPTED: Akzeptiert
+      NOT_ACTIVE: Neu/Inaktiv (nie aktiviert = Neu)
+      SCHEDULED: Geplant
+    processStatus:
+      REQUESTED: Angefragt
+      ACTIVE: Aktiv
+      REJECTED: Abgelehnt
+      ARCHIVED: Archiviert
+      ACCEPTED: Akzeptiert
+      NOT_ACTIVE: Inaktiv
+      SCHEDULED: Geplant
+    marketProcessType:
+      RegisterMeteringPoint: Registrierung
+      DeactivateMeteringPoint: Deaktivierung
+      ChangeParticipationFactor: Änderung Teilnahmefaktor
+      UpdateShareFactor: Änderung Anteilfaktor
+      EnergyDataRequest: Energiedatenabfrage
+      RequestConfiguration: Konfigurationsabfrage
+
+ops_skills:
+  match_threshold: 0.7
+
+guard_vocabulary:
+  sentence_split:
+    abbreviations: [bzw, vs, max]
+  fabricated_action:
+    hedged_sentence_pattern: '\?|\b(?:nicht|kein|keine|keinen|keiner|konnte|konnten|könnte|koennte|kann|kannst|leider|fehler|fehlgeschlagen|abgelehnt|würde|wuerde|werde|wird|werden|soll|sollte|möchte|moechte|müsste|muesste|falls|sobald|wenn|bereits|schon|damals|zuvor|bisher|ursprünglich|urspruenglich|vorhin|zuletzt|gestern|letzten?|noch|bedeutet|heißt|heisst)\b|\b(?:not|no|cannot|can''t|couldn''t|could|failed|error|unable|will|would|shall|should|already|previously)\b|\b(?:du hast|hast du|you have|you''ve)\b|\b\d{1,2}\.\d{1,2}\.(?:\d{2,4})?\b|\b(?:19|20)\d{2}\b'
+    write_claim_patterns:
+      - '(?<![A-Za-zÄÖÜäöüß])(?:ich habe|habe ich|ich hab|hab ich)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,120}(?<![A-Za-zÄÖÜäöüß])(?:aktiviert|deaktiviert|geändert|geaendert|aktualisiert|angepasst|eingetragen|gelöscht|geloescht|entfernt|angelegt|erstellt|gespeichert|gesetzt|hinzugefügt|hinzugefuegt|übermittelt|uebermittelt|übertragen|uebertragen|übergeben|uebergeben|gestartet|angestoßen|angestossen|ausgelöst|ausgeloest|veranlasst|beauftragt|storniert|durchgeführt|durchgefuehrt)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])(?:wurde|wurden|ist|sind)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,80}(?<![A-Za-zÄÖÜäöüß])(?:durchgeführt|durchgefuehrt|übergeben|uebergeben|übermittelt|uebermittelt|angestoßen|angestossen|ausgelöst|ausgeloest|veranlasst|gestartet|storniert|erledigt)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])erfolgreich(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,60}(?<![A-Za-zÄÖÜäöüß])(?:aktiviert|deaktiviert|geändert|geaendert|aktualisiert|angepasst|eingetragen|gelöscht|geloescht|entfernt|angelegt|erstellt|gespeichert|gesetzt|hinzugefügt|hinzugefuegt|übermittelt|uebermittelt|übertragen|uebertragen|übergeben|uebergeben|gestartet|angestoßen|angestossen|ausgelöst|ausgeloest|veranlasst|beauftragt|storniert|durchgeführt|durchgefuehrt|abgeschlossen)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])(?:ist|sind|wurde|wurden)\s+erledigt(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])i(?:''ve| have)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,120}(?<![A-Za-zÄÖÜäöüß])(?:activated|deactivated|updated|changed|created|deleted|removed|added|saved|submitted|started|triggered|cancelled|registered)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])successfully (?:activated|updated|changed|created|deleted|saved|submitted|started|completed)(?![A-Za-zÄÖÜäöüß])'
+    write_success_pattern: '(?<![A-Za-zÄÖÜäöüß])(?:aktiviert|deaktiviert|geändert|geaendert|aktualisiert|angepasst|eingetragen|gelöscht|geloescht|entfernt|angelegt|erstellt|gespeichert|gesetzt|hinzugefügt|hinzugefuegt|übermittelt|uebermittelt|übertragen|uebertragen|übergeben|uebergeben|gestartet|angestoßen|angestossen|ausgelöst|ausgeloest|veranlasst|beauftragt|storniert|durchgeführt|durchgefuehrt|abgeschlossen|erledigt)(?![A-Za-zÄÖÜäöüß])'
+    read_claim_patterns:
+      - '(?<![A-Za-zÄÖÜäöüß])(?:ich habe|habe ich|ich hab|hab ich)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,120}(?<![A-Za-zÄÖÜäöüß])(?:durchsucht|durchgesehen|gesucht|abgefragt|abgerufen|ausgelesen|nachgeschlagen|recherchiert)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])i(?:''ve| have)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,120}(?<![A-Za-zÄÖÜäöüß])(?:searched|checked|reviewed|scanned|queried|verified|looked up)(?![A-Za-zÄÖÜäöüß])'
+    navigation_claim_patterns:
+      - '(?<![A-Za-zÄÖÜäöüß])du (?:befindest dich|bist)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,80}(?<![A-Za-zÄÖÜäöüß])auf der(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,60}(?<![A-Za-zÄÖÜäöüß])seite(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])ich habe dich(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,80}(?<![A-Za-zÄÖÜäöüß])(?:weitergeleitet|gebracht|navigiert)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])(?:ich habe|habe ich)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,80}(?<![A-Za-zÄÖÜäöüß])seite(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,40}(?<![A-Za-zÄÖÜäöüß])(?:geöffnet|geoeffnet|aufgerufen)(?![A-Za-zÄÖÜäöüß])'
+    navigation_hedged_sentence_pattern: '\?|\b(?:nicht|kein|keine|keinen|keiner|not|no|never)\b'
+    promise_claim_patterns:
+      - '(?<![A-Za-zÄÖÜäöüß])lass (?:mich|uns)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,80}(?<![A-Za-zÄÖÜäöüß])(?:prüfen|pruefen|nachsehen|nachschauen|nachlesen|heraussuchen|raussuchen|suchen|abrufen|abfragen|holen|checken)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])ich (?:prüfe|pruefe|schaue?|hole|rufe|suche|lade|speichere|checke)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])einen (?:moment|augenblick)(?![A-Za-zÄÖÜäöüß])'
+      - '\blet me\b[^.!?\n]{0,80}\b(?:check|look|fetch|search|retrieve|verify|pull)\b'
+      - '\bi(?:''m| am) (?:checking|looking|fetching|searching|retrieving)\b'
+      - '\bone moment\b'
+    promise_hedged_sentence_pattern: '\?|\b(?:nicht|kein|keine|keinen|keiner|falls|sobald|wenn|not|no|never|if|once|when)\b'
+    restoration_claim_patterns:
+      - '(?<![A-Za-zÄÖÜäöüß])(?:ich habe|habe ich|ich hab|hab ich|wurde|wurden|ist|sind)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,120}(?<![A-Za-zÄÖÜäöüß])(?:zurückgesetzt|zurueckgesetzt|wiederhergestellt|rückgängig|rueckgaengig|restored|reverted)(?![A-Za-zÄÖÜäöüß])'
+      - '(?<![A-Za-zÄÖÜäöüß])i(?:''ve| have)(?![A-Za-zÄÖÜäöüß])[^.!?\n]{0,120}(?<![A-Za-zÄÖÜäöüß])(?:restored|reverted|rolled back)(?![A-Za-zÄÖÜäöüß])'
+    restoration_hedged_sentence_pattern: '\?|\b(?:nicht|kein|keine|keinen|keiner|konnte|konnten|könnte|koennte|kann|kannst|leider|fehler|fehlgeschlagen|abgelehnt|würde|wuerde|werde|wird|werden|soll|sollte|möchte|moechte|müsste|muesste|falls|sobald|wenn|bereits|schon|damals|zuvor|bisher|vorhin|zuletzt|gestern)\b|\b(?:not|no|cannot|can''t|couldn''t|could|failed|error|unable|will|would|shall|should|already|previously)\b'
+  unsupported_role_claim:
+    role_read_tool_pattern: '(role|rolle|permission|berechtigung)'
+    role_term_pattern: '(?:^|[^a-zäöüß-])(?:community-|eg-)?(?:admin(?:istrator(?:in)?)?|manager(?:in)?)\b'
+    prose_claim_pattern: '\b(?:ist|sind|als)\s+(?:derzeit\s+|aktuell\s+)?(?:ein[e]?\s+)?(?:community-|eg-)?(?:admin(?:istrator(?:in)?)?|manager(?:in)?)\b'
+    negation_pattern: '\b(?:nicht|kein|keine|keinen|keiner|keines|keinem|niemand|leer|keinerlei|not|no|none|nobody)\b'
+    column_pattern: '\b(?:rolle[n]?|role[s]?|berechtigung(?:en)?|permission[s]?)\b'
+  identifier_mislabel:
+    label_pattern: '(?:kunden?-?nummer|kunden?-?nr\.?|customer\s*number|customernumber)'
+    negation_pattern: '\b(?:nicht|kein|keine|keinen|keiner|niemals|nie|not|no|never|statt|anstatt|falsch|wrong)\b'
+  answer_grounding:
+    identifier_patterns:
+      - '\bAT\d{31}\b'
+      - '\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b'
+      - '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b'
+      - '\bAT\d{2}[ ]?(?:\d{4}[ ]?){4}\b'
+    aggregate_terms:
+      - 'durchschnittlich(?:er|es|e|en)?'
+      - 'durchschnitt'
+      - '\bschnitt\b'
+      - 'im mittel'
+      - 'mittelwert'
+      - 'summe'
+      - 'average'
+      - 'mean'
+    count_terms:
+      - 'gesamtzahl'
+      - 'gesamtanzahl'
+      - 'insgesamt'
+      - '\btotal number\b'
+      - '\bin total\b'
+    rule_figure_patterns:
+      - '\bmaximal\w*\b|\bhoechstens\b|höchstens|\bmindestens\b'
+      - '(?<![A-Za-zÄÖÜäöüß])(?:ueberschreit|überschreit|ueberschritt|überschritt|uebersteig|übersteig)\w*'
+      - '\bdarf\b[^.!?\n]{0,80}\bnicht\b'
+      - '\bobergrenze\b|\buntergrenze\b|\bgrenzwert\b|\bmaximalwert\b'
+      - '(?<![A-Za-zÄÖÜäöüß])(?:ueber|über|unter|mehr als|weniger als|nicht mehr als|bis zu)\s*(?:\*\*|„|"|>)?\s*\d'
+      - '\b(?:at most|at least|up to|must not exceed|more than|less than|no more than)\s*(?:\*\*)?\s*\d'
+  capability_denial:
+    access_claim_patterns:
+      - '\bkein(?:en|e|er)?\s+(?:zugriff|zugang)\b'
+      - '\bno access to\b'
+      - '\b(?:api|endpunkt|endpoint|schnittstelle|operation|zugriff|berechtigung)\b[^.!?\n]{0,60}\bnicht\s+(?:freigegeben|freigeschaltet|zugelassen)\b'
+      - '\bapi\b[^.!?\n]{0,60}\b(?:liefert|gibt|bietet|stellt)\b[^.!?\n]{0,40}\b(?:nicht|keine[nrs]?)\b'
+      - '\b(?:ich (?:kann|darf|habe)|(?:kann|darf) ich)\b[^.!?\n]{0,80}\b(?:nicht|keine[nrs]?)\b[^.!?\n]{0,60}(?<![A-Za-zÄÖÜäöüß])(?:abrufen|anzeigen|auslesen|einsehen|abfragen|zugreifen)(?![A-Za-zÄÖÜäöüß])'
+      - '\b(?:ich (?:kann|darf)|(?:kann|darf) ich)\b[^.!?\n]{0,80}\b(?:nicht|keine[nrs]?)\b[^.!?\n]{0,60}(?<![A-Za-zÄÖÜäöüß])(?:ausfuehren|ausführen|durchfuehren|durchführen|aendern|ändern|umstellen|umschalten|einstellen|anpassen|setzen|wechseln|navigieren|oeffnen|öffnen|aktualisieren|steuern|bedienen|anlegen|erstellen|hinzufuegen|hinzufügen|loeschen|löschen|entfernen|zuweisen)(?![A-Za-zÄÖÜäöüß])'
+    capability_claim_patterns:
+      - '\bkein(?:en|e|er)?\s+(?:moeglichkeit|möglichkeit)\b'
+      - '\bgibt es\b[^.!?\n]{0,60}\b(?:nicht|keine|keinen)\b'
+      - '\b(?:ist|sind|steht|stehen)\b[^.!?\n]{0,60}\bnicht\s+(?:moeglich|möglich|verfuegbar|verfügbar|vorgesehen|unterstuetzt|unterstützt|zur verfuegung|zur verfügung)\b'
+      - '\bnicht\s+(?:moeglich|möglich|verfuegbar|verfügbar|vorgesehen|unterstuetzt|unterstützt)\s+(?:ist|sind|sein|waere|wäre|war|waren)\b'
+      - '\b(?:existiert|existieren)\b[^.!?\n]{0,40}\bnicht\b'
+      - '\bnot\s+(?:available|possible|supported|offered)\b'
+      - "\\b(?:there is|there's)\\b[^.!?\\n]{0,40}\\bno\\b"
+    hedged_sentence_pattern: '\?|\b(?:fehlgeschlagen|fehler|technisch|momentan|derzeit nicht erreichbar|zeitueberschreitung|zeitüberschreitung|failed|error|timeout|temporarily)\b|\b(?:moechtest du|möchtest du|soll ich|shall i|do you want)\b'
+  continuation_fields:
+    - kind: email
+      name_markers: [email, mail]
+    - kind: meteringPointNumber
+      name_markers: [metering, zaehlpunkt]
+      value_pattern: '^AT\d{31}$'
+    - kind: iban
+      name_markers: [iban]
+    - kind: date
+    - kind: phone
+      name_markers: [phone, telefon, mobil, handy]
+
+prompting:
+  intent_entity_nouns:
+    - gemeinschaft
+    - community
+    - mitglied
+    - member
+    - teilnehmer
+    - participant
+    - zählpunkt
+    - messpunkt
+    - abrechnung
+    - abrechnungsperiode
+    - rechnung
+  scope: >-
+    You only help with this application — navigating it, explaining its features and
+    data, and performing in-app actions. If a request is unrelated to this application
+    (for example general knowledge, trivia, current events, jokes, small talk, or coding
+    help that is not about using this app), politely decline in one short sentence in the
+    user's language and offer to help with the application instead. For questions about
+    this application, only answer from what you can actually ground — retrieved knowledge,
+    the current page, or a tool or API result. If you cannot ground an answer that way,
+    say plainly that you do not have that information rather than answering from general
+    knowledge or guessing. Do not over-decline: requests that touch this application's
+    concepts, data, pages, or workflows are in scope even when phrased indirectly, so when
+    in doubt treat the request as in scope and help.
+  capability_boundaries:
+    - domain: Abrechnung (Billing)
+      summary: >-
+        Du kannst den Abrechnungsablauf selbst ausführen: Abrechnungsperioden berechnen
+        (Vorschau), erstellen und veröffentlichen — jede Schreibaktion erst nach
+        Bestätigung durch den Nutzer. Löschen und Datei-Exporte bleiben dem Nutzer auf
+        der Seite "Abrechnung" vorbehalten.
+      can:
+        - Abrechnungsperioden und ihren Status lesen (getBillingPeriods, getBillingPeriodById)
+        - Abrechnung für einen Zeitraum berechnen/Vorschau erstellen (previewBillingPeriod)
+        - Abrechnungsperioden erstellen (createBillingPeriod, nach Bestätigung)
+        - Abrechnungsperioden veröffentlichen (publishBillingPeriod, nach Bestätigung)
+        - Veröffentlichte Abrechnungen und Rechnungsdetails lesen (getPublishedBillingPeriods, getPublishedBillingPeriodById, getPublishedBillDetails)
+        - Rechnungsdokumente abrufen (getPublishedBillDocument)
+        - Den Abrechnungsablauf und die Statuswerte erklären und zur Seite "Abrechnung" navigieren
+      cannot:
+        - Abrechnungsperioden löschen
+        - DATEV-/SEPA-/Excel-/ZIP-Exporte der Abrechnung erzeugen oder Rechnungsdokumente inhaltlich prüfen (Binärdateien sind nicht lesbar — Rechnungsdaten stattdessen über die JSON-Reads)
+        - Rechnungen korrigieren oder stornieren
+      handoff_page: Abrechnung
+    - domain: Abrechnung bis 2025 (Legacy)
+      summary: >-
+        Das alte Abrechnungssystem (Abrechnungszyklen bis 2025) ist nur noch für
+        historische Abrechnungen da. Du hast keinen API-Zugriff darauf — nur ansehen
+        und erklären.
+      can:
+        - Die Seite "Abrechnung bis 2025" öffnen, sichtbare Zyklen lesen und den Ablauf erklären
+      cannot:
+        - Alt-Abrechnungen erstellen, ändern, veröffentlichen oder exportieren
+        - Alt-Abrechnungsdaten per API oder Skript abrufen
+      handoff_page: Abrechnung bis 2025
+    - domain: Regulatorische Stammdaten
+      summary: >-
+        Nur die technischen Identifikatoren der Gemeinschaft (Marktteilnehmernummer,
+        Energiegemeinschafts-ID, Typ, Vereins-/Firmenbuchnummer, Kundennummer der Gemeinschaft)
+        pflegt der Betreiber — in der App nur lesbar ("Gemeinschaft verwalten → Meine
+        Energiegemeinschaft"). Die Basisdaten derselben Seite — Verwalter-Name und -Telefonnummer,
+        Adresse sowie die UID-Nummer und damit der Umsatzsteuerstatus — sind dagegen änderbar
+        (updateCommunityBaseInformation): UID hinterlegt = umsatzsteuerpflichtig, keine UID =
+        Kleinunternehmer-Regeln. Zahlungsdaten (IBAN/BIC) sind ebenfalls änderbar.
+      can:
+        - Die technischen Identifikatoren anzeigen und erklären
+        - Basisdaten inkl. UID-Nummer und Umsatzsteuerstatus über updateCommunityBaseInformation ändern (mit Bestätigung)
+      cannot:
+        - Die technischen Identifikatoren (Marktteilnehmernummer, Energiegemeinschafts-ID, Typ, Vereins-/Firmenbuchnummer, Kundennummer) ändern
+  system_rules:
+    - "SPRACHE: Antworte IMMER auf Deutsch und duze den Benutzer (Du, nicht Sie)."
+    - "Never invent application facts: answer only from a tool/API result, the current page, or retrieved knowledge; if ungrounded, say plainly that you do not have that information."
+    - "Use only the allowlisted Pilot api_* operations: call the matching api_* tool directly; use lookup_api_endpoints only to find it — do not loop on lookup or fall back to scripts or raw backend paths. If an operation is not enabled for Pilot, say so plainly and do not work around it."
+    - "Never claim a write succeeded unless a follow-up read (or an already-absent / 404 delete result) confirms it. Treat a delete 404/not-found as terminal: verify current state instead of retrying the same delete."
+    - "Metering-point status (activationStatus), process status (processStatus), activation date, per-point process history (processes[] via getAssignedMeteringPoints), and assigned/unassigned come ONLY from the market-process reads: read the status before any status action. Match a user-named AT-number to a point in those reads first (the AT-number is not the internal ID); if it matches no point, say plainly that this metering point is not in the current community — do not say you are simply unable to act."
+    - "When presenting fetched records as a list or table, only include a column if at least one row has a real value (drop everywhere-empty or placeholder columns) and hide clearly invalid values (e.g. a phone number that is just a long run of repeated digits)."
+    - "Never assign a record a status the data does not explicitly state, and never derive a status or count by arithmetic; if the data does not state it, say it cannot be determined. Do not present a page's summary counts as a breakdown of a fetched list they do not reconcile with, and never present one entity type's data built from another entity's fields as that entity — say which part is missing instead."
+    - "Rollen sind pro Konto lesbar (getAccountRoles), nicht als fertige Admin-Liste. Für 'wer ist Administrator' fächere daher mit bulk_call über die Mitgliederliste auf und nenne die Konten, deren Rolle das Ergebnis ausweist — erfinde keine Rollen und leite sie nicht aus anderen Feldern ab."
+    - "Interne IDs (UUIDs) sind NIEMALS Kundennummern oder andere Fachfelder — gib nie eine UUID als Kundennummer aus. Fehlt ein angefordertes Feld in den geladenen Daten: hole es über die Detail-API nach oder sage klar, dass es dort nicht verfügbar ist — benenne niemals ein anderes Feld um."
+    - "Antworte bei jeder nicht ausführbaren Aktion (Policy, Werkzeug oder Berechtigung fehlt) im Muster: 'Ich kann X nicht selbst tun, aber ich helfe dir dabei: <konkrete Alternative>' — nenne Seite und Schritte aus Seitenbeschreibungen und Wissen; erfinde keine falschen Selbsthilfe-Wege."
+    - "BEGRIFFE: Verwende die Begriffe der App-Oberfläche: Zählpunkte vom Typ CONSUMPTION heißen 'Abnehmer', vom Typ PRODUCTION 'Einspeiser'. Übersetze interne Enum-Werte nie wörtlich (nicht 'Verbrauchs-Zählpunkte'/'Erzeugungs-Zählpunkte')."
+
+intent_routing:
+  llm_primary: true
+  llm_budget_ms: 5000
+  cache:
+    enabled: true
+    revalidate_sample_rate: 0.05
+
+runtime:
+  root_dir: /data/runtime
+  task_history_file: /data/runtime/task-history.json
+  downloads_dir: /data/runtime/downloads
+  audit_log_file: /data/runtime/audit.jsonl
+
+cost_controls:
+  context_caching:
+    measurement_enabled: true
+    provider_allowlist: ['anthropic', 'openai_compatible']
